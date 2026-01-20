@@ -14,15 +14,18 @@
 
     h1 { text-align: center; margin: 20px 0; }
 
-    #filters, #search-container {
+    #search-container {
       text-align: center;
       margin-bottom: 15px;
     }
 
-    #filters select, #search-container input {
+    #search-container input {
       padding: 5px 10px;
-      margin: 0 5px;
+      width: 250px;
       border-radius: 5px;
+      border: 1px solid #555;
+      background: #222;
+      color: #eee;
     }
 
     #maps {
@@ -87,33 +90,6 @@
     <input type="text" id="mapSearch" placeholder="Buscar mapa...">
   </div>
 
-  <!-- Filtros -->
-  <div id="filters">
-    Tier:
-    <select id="tierFilter">
-      <option value="all">Todos</option>
-      <option value="4">T4</option>
-      <option value="5">T5</option>
-      <option value="6">T6</option>
-      <option value="7">T7</option>
-      <option value="8">T8</option>
-    </select>
-
-    Recurso:
-    <select id="resourceFilter">
-      <option value="all">Todos</option>
-      <option value="WOOD">Madera</option>
-      <option value="STONE">Piedra</option>
-      <option value="ORE">Minerales</option>
-      <option value="FIBER">Fibra</option>
-      <option value="LEATHER">Cuero</option>
-      <option value="BLUE">Blue Chest</option>
-      <option value="GREEN">Green Chest</option>
-      <option value="GOLD">Gold Chest</option>
-      <option value="DUNGEON">Dungeon</option>
-    </select>
-  </div>
-
   <div id="maps"></div>
 
   <script>
@@ -122,8 +98,6 @@
     let allMaps = [];
 
     const container = document.getElementById('maps');
-    const tierSelect = document.getElementById('tierFilter');
-    const resourceSelect = document.getElementById('resourceFilter');
     const searchInput = document.getElementById('mapSearch');
 
     // Carga de mapas
@@ -192,26 +166,12 @@
       });
     }
 
-    // Función de filtrado combinada
-    function applyFilters() {
+    // Barra de búsqueda
+    searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase().trim();
-      const tierValue = tierSelect.value;
-      const resourceValue = resourceSelect.value.toUpperCase();
-
       const filtered = allMaps.filter(map => {
-        // Detectamos las claves correctas
-        const tierKey = Object.keys(map).find(k=>k.toLowerCase()==='tier');
-        const resourcesKey = Object.keys(map).find(k=>k.toLowerCase()==='resources');
-
-        const mapTier = tierKey ? String(map[tierKey]) : '';
-        const mapResources = resourcesKey ? (map[resourcesKey]||[]).map(r=>r.toUpperCase()) : [];
         const name = map.map_name || '';
-
-        const tierMatch = tierValue==='all' || mapTier===tierValue;
-        const resourceMatch = resourceValue==='all' || mapResources.includes(resourceValue);
-        const searchMatch = query==='' || name.toLowerCase().includes(query);
-
-        return tierMatch && resourceMatch && searchMatch;
+        return name.toLowerCase().includes(query);
       });
 
       if(filtered.length===0){
@@ -219,13 +179,9 @@
       } else {
         renderMaps(filtered);
       }
-    }
-
-    // Eventos
-    tierSelect.addEventListener('change', applyFilters);
-    resourceSelect.addEventListener('change', applyFilters);
-    searchInput.addEventListener('input', applyFilters);
+    });
   </script>
 </body>
 </html>
+
 
