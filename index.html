@@ -111,7 +111,7 @@
 
   <script>
     const WORKER_URL = 'https://avalon-maps.pcaternador.workers.dev/'
-    const ICONS_PATH = 'icons/'  // Carpeta donde están los iconos
+    const ICONS_PATH = './icons/'  // carpeta icons en la misma raíz que index.html
     let allMaps = []
 
     const container = document.getElementById('maps')
@@ -129,20 +129,20 @@
     function renderMaps(maps) {
       container.innerHTML = ''
       maps.forEach(map => {
-        // Reemplazar recursos por iconos
+        // Recursos con iconos
         const resourcesDiv = document.createElement('div')
         resourcesDiv.className = 'resources'
         if (map.resources) {
           map.resources.forEach(r => {
             const img = document.createElement('img')
-            const iconName = r.toLowerCase() + '.png' // ejemplo: BLUE → blue.png
+            const iconName = r.toLowerCase() + '.png'  // BLUE → blue.png
             img.src = ICONS_PATH + iconName
             img.alt = r
             resourcesDiv.appendChild(img)
           })
         }
 
-        // Cofres
+        // Cofres y dungeons con iconos
         const chestsDiv = document.createElement('div')
         chestsDiv.className = 'chests'
         const chestTypes = ['green_chests', 'blue_chests', 'gold_chests', 'dungeons']
@@ -158,13 +158,12 @@
         })
 
         let imgSrc = map.image ? map.image.replace(/\\/g, '/') : ''
-        if (!imgSrc || imgSrc === '') imgSrc = 'https://via.placeholder.com/220x150?text=No+Image'
+        if (!imgSrc) imgSrc = 'https://via.placeholder.com/220x150?text=No+Image'
         else imgSrc = encodeURI(imgSrc)
 
         const div = document.createElement('div')
         div.className = 'map'
 
-        // Tooltip con nodos
         const tooltipHTML = `
           <p>Leather: ${map.leather_nodes || 0}</p>
           <p>Wood: ${map.wood_nodes || 0}</p>
