@@ -192,17 +192,24 @@
     resourceSelect.addEventListener('change', applyFilters)
 
     function applyFilters() {
-      const tierValue = tierSelect.value
-      const resourceValue = resourceSelect.value
+  const tierValue = tierSelect.value;          // "all", "4", "5", ...
+  const resourceValue = resourceSelect.value.toUpperCase();  // normalizamos a mayúsculas
 
-      const filtered = allMaps.filter(map => {
-        const tierMatch = tierValue === 'all' || map.tier == parseInt(tierValue)
-        const resourceMatch = resourceValue === 'all' || (map.resources && map.resources.includes(resourceValue))
-        return tierMatch && resourceMatch
-      })
+  const filtered = allMaps.filter(map => {
+    // Forzar a string para tier, por si viene como número
+    const mapTier = map.tier ? String(map.tier) : '';
+    const tierMatch = tierValue === 'all' || mapTier === tierValue;
 
-      renderMaps(filtered)
-    }
+    // Normalizamos recursos a mayúsculas
+    const mapResources = (map.resources || []).map(r => r.toUpperCase());
+    const resourceMatch = resourceValue === 'all' || mapResources.includes(resourceValue);
+
+    return tierMatch && resourceMatch;
+  });
+
+  renderMaps(filtered);
+}
   </script>
 </body>
 </html>
+
