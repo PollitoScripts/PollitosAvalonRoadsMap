@@ -11,10 +11,19 @@
       margin: 0;
       padding: 0;
     }
-    h1 {
+
+    h1 { text-align: center; margin: 20px 0; }
+
+    #filters {
       text-align: center;
-      margin: 20px 0;
+      margin-bottom: 15px;
     }
+    #filters select {
+      padding: 5px 10px;
+      margin: 0 5px;
+      border-radius: 5px;
+    }
+
     #maps {
       display: flex;
       flex-wrap: wrap;
@@ -22,73 +31,179 @@
       gap: 15px;
       padding: 10px;
     }
+
     .map {
       border: 1px solid #444;
       border-radius: 8px;
       padding: 10px;
       width: 220px;
       background: #222;
-      transition: transform 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
     }
     .map:hover {
       transform: scale(1.05);
-      border-color: #888;
+      box-shadow: 0 0 15px #888;
     }
+
     .map img {
       max-width: 100%;
       border-radius: 4px;
+      margin-bottom: 5px;
     }
-    .map h3 {
-      margin: 5px 0;
-      font-size: 1.1em;
-    }
-    .map p {
+
+    .map h3 { margin: 5px 0; font-size: 1.1em; }
+    .resources, .chests {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
       margin: 3px 0;
-      font-size: 0.9em;
     }
+    .resources img, .chests img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .tooltip {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0,0,0,0.7);
+      padding: 5px;
+      font-size: 0.8em;
+      border-radius: 5px;
+      display: none;
+      z-index: 10;
+    }
+    .map:hover .tooltip { display: block; }
   </style>
 </head>
 <body>
   <h1>Albion Maps</h1>
+
+  <div id="filters">
+    Tier:
+    <select id="tierFilter">
+      <option value="all">Todos</option>
+      <option value="4">T4</option>
+      <option value="5">T5</option>
+      <option value="6">T6</option>
+      <option value="7">T7</option>
+      <option value="8">T8</option>
+    </select>
+
+    Recurso:
+    <select id="resourceFilter">
+      <option value="all">Todos</option>
+      <option value="WOOD">Madera</option>
+      <option value="STONE">Piedra</option>
+      <option value="ORE">Minerales</option>
+      <option value="FIBER">Fibra</option>
+      <option value="LEATHER">Cuero</option>
+      <option value="BLUE">Blue Chest</option>
+      <option value="GREEN">Green Chest</option>
+      <option value="GOLD">Gold Chest</option>
+      <option value="DUNGEON">Dungeon</option>
+    </select>
+  </div>
+
   <div id="maps"></div>
 
   <script>
     const WORKER_URL = 'https://avalon-maps.pcaternador.workers.dev/'
+    const ICONS_PATH = 'icons/'  // Carpeta donde están los iconos
+    let allMaps = []
+
+    const container = document.getElementById('maps')
+    const tierSelect = document.getElementById('tierFilter')
+    const resourceSelect = document.getElementById('resourceFilter')
 
     fetch(WORKER_URL)
       .then(res => res.json())
       .then(data => {
-        // Aplanar si el JSON tiene un array dentro de otro array
-        const mapsArray = Array.isArray(data[0]) ? data[0] : data
-        const container = document.getElementById('maps')
-
-        mapsArray.forEach(map => {
-          // Recursos
-          const resourcesText = map.resources && map.resources.length > 0
-            ? map.resources.join(', ')
-            : 'No hay recursos'
-
-          // URL de la imagen
-          let imgSrc = map.image ? map.image.replace(/\\/g, '/') : ''
-          if (!imgSrc || imgSrc === '') {
-            imgSrc = 'https://via.placeholder.com/220x150?text=No+Image'
-          } else {
-            imgSrc = encodeURI(imgSrc) // Codifica espacios y caracteres raros
-          }
-
-          // Crear div del mapa
-          const div = document.createElement('div')
-          div.className = 'map'
-          div.innerHTML = `
-            <h3>${map.map_name || 'Sin nombre'} (T${map.tier || '?'})</h3>
-            <img src="${imgSrc}" alt="${map.map_name || ''}">
-            <p>Recursos: ${resourcesText}</p>
-            <p>Green Chests: ${map.green_chests || 0}, Blue Chests: ${map.blue_chests || 0}, Gold Chests: ${map.gold_chests || 0}</p>
-          `
-          container.appendChild(div)
-        })
+        allMaps = Array.isArray(data[0]) ? data[0] : data
+        renderMaps(allMaps)
       })
       .catch(err => console.error('Error fetch:', err))
+
+    function renderMaps(maps) {
+      container.innerHTML = ''
+      maps.forEach(map => {
+        // Reemplazar recursos por iconos
+        const resourcesDiv = document.createElement('div')
+        resourcesDiv.className = 'resources'
+        if (map.resources) {
+          map.resources.forEach(r => {
+            const img = document.createElement('img')
+            const iconName = r.toLowerCase() + '.png' // ejemplo: BLUE → blue.png
+            img.src = ICONS_PATH + iconName
+            img.alt = r
+            resourcesDiv.appendChild(img)
+          })
+        }
+
+        // Cofres
+        const chestsDiv = document.createElement('div')
+        chestsDiv.className = 'chests'
+        const chestTypes = ['green_chests', 'blue_chests', 'gold_chests', 'dungeons']
+        chestTypes.forEach(type => {
+          const count = map[type] || 0
+          const iconName = type.replace('_chests','').replace('dungeons','dungeon') + '.png'
+          for (let i = 0; i < count; i++) {
+            const img = document.createElement('img')
+            img.src = ICONS_PATH + iconName
+            img.alt = type
+            chestsDiv.appendChild(img)
+          }
+        })
+
+        let imgSrc = map.image ? map.image.replace(/\\/g, '/') : ''
+        if (!imgSrc || imgSrc === '') imgSrc = 'https://via.placeholder.com/220x150?text=No+Image'
+        else imgSrc = encodeURI(imgSrc)
+
+        const div = document.createElement('div')
+        div.className = 'map'
+
+        // Tooltip con nodos
+        const tooltipHTML = `
+          <p>Leather: ${map.leather_nodes || 0}</p>
+          <p>Wood: ${map.wood_nodes || 0}</p>
+          <p>Stone: ${map.stone_nodes || 0}</p>
+          <p>Fiber: ${map.fiber_nodes || 0}</p>
+          <p>Mineral: ${map.mineral_nodes || 0}</p>
+        `
+
+        div.innerHTML = `
+          <h3>${map.map_name || 'Sin nombre'} (T${map.tier || '?'})</h3>
+          <img src="${imgSrc}" alt="${map.map_name || ''}">
+        `
+        div.appendChild(resourcesDiv)
+        div.appendChild(chestsDiv)
+
+        const tooltip = document.createElement('div')
+        tooltip.className = 'tooltip'
+        tooltip.innerHTML = tooltipHTML
+        div.appendChild(tooltip)
+
+        container.appendChild(div)
+      })
+    }
+
+    tierSelect.addEventListener('change', applyFilters)
+    resourceSelect.addEventListener('change', applyFilters)
+
+    function applyFilters() {
+      const tierValue = tierSelect.value
+      const resourceValue = resourceSelect.value
+
+      const filtered = allMaps.filter(map => {
+        const tierMatch = tierValue === 'all' || map.tier == parseInt(tierValue)
+        const resourceMatch = resourceValue === 'all' || (map.resources && map.resources.includes(resourceValue))
+        return tierMatch && resourceMatch
+      })
+
+      renderMaps(filtered)
+    }
   </script>
 </body>
 </html>
