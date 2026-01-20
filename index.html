@@ -14,11 +14,12 @@
 
     h1 { text-align: center; margin: 20px 0; }
 
-    #filters {
+    #filters, #search-container {
       text-align: center;
       margin-bottom: 15px;
     }
-    #filters select {
+
+    #filters select, #search-container input {
       padding: 5px 10px;
       margin: 0 5px;
       border-radius: 5px;
@@ -81,6 +82,12 @@
 <body>
   <h1>Albion Maps</h1>
 
+  <!-- Barra de búsqueda -->
+  <div id="search-container">
+    <input type="text" id="mapSearch" placeholder="Buscar mapa...">
+  </div>
+
+  <!-- Filtros -->
   <div id="filters">
     Tier:
     <select id="tierFilter">
@@ -110,59 +117,56 @@
   <div id="maps"></div>
 
   <script>
-    const WORKER_URL = 'https://avalon-maps.pcaternador.workers.dev/'
-    const ICONS_PATH = './icons/'  // carpeta icons en la misma raíz que index.html
-    let allMaps = []
+    const WORKER_URL = 'https://avalon-maps.pcaternador.workers.dev/';
+    const ICONS_PATH = './icons/';
+    let allMaps = [];
 
-    const container = document.getElementById('maps')
-    const tierSelect = document.getElementById('tierFilter')
-    const resourceSelect = document.getElementById('resourceFilter')
+    const container = document.getElementById('maps');
+    const tierSelect = document.getElementById('tierFilter');
+    const resourceSelect = document.getElementById('resourceFilter');
+    const searchInput = document.getElementById('mapSearch');
 
+    // Carga de mapas
     fetch(WORKER_URL)
       .then(res => res.json())
       .then(data => {
-        allMaps = Array.isArray(data[0]) ? data[0] : data
-        renderMaps(allMaps)
+        allMaps = Array.isArray(data[0]) ? data[0] : data;
+        renderMaps(allMaps);
       })
-      .catch(err => console.error('Error fetch:', err))
+      .catch(err => console.error('Error fetch:', err));
 
     function renderMaps(maps) {
-      container.innerHTML = ''
+      container.innerHTML = '';
       maps.forEach(map => {
-        // Recursos con iconos
-        const resourcesDiv = document.createElement('div')
-        resourcesDiv.className = 'resources'
-        if (map.resources) {
-          map.resources.forEach(r => {
-            const img = document.createElement('img')
-            const iconName = r.toLowerCase() + '.png'  // BLUE → blue.png
-            img.src = ICONS_PATH + iconName
-            img.alt = r
-            resourcesDiv.appendChild(img)
-          })
-        }
+        const resourcesDiv = document.createElement('div');
+        resourcesDiv.className = 'resources';
+        const mapResourcesKey = Object.keys(map).find(k => k.toLowerCase() === 'resources');
+        const mapResources = mapResourcesKey ? map[mapResourcesKey] : [];
+        mapResources.forEach(r => {
+          const img = document.createElement('img');
+          img.src = ICONS_PATH + r.toLowerCase() + '.png';
+          img.alt = r;
+          resourcesDiv.appendChild(img);
+        });
 
-        // Cofres y dungeons con iconos
-        const chestsDiv = document.createElement('div')
-        chestsDiv.className = 'chests'
-        const chestTypes = ['green_chests', 'blue_chests', 'gold_chests', 'dungeons']
+        const chestsDiv = document.createElement('div');
+        chestsDiv.className = 'chests';
+        const chestTypes = ['green_chests','blue_chests','gold_chests','dungeons'];
         chestTypes.forEach(type => {
-          const count = map[type] || 0
-          const iconName = type.replace('_chests','').replace('dungeons','dungeon') + '.png'
-          for (let i = 0; i < count; i++) {
-            const img = document.createElement('img')
-            img.src = ICONS_PATH + iconName
-            img.alt = type
-            chestsDiv.appendChild(img)
+          const count = map[type] || 0;
+          const iconName = type.replace('_chests','').replace('dungeons','dungeon') + '.png';
+          for(let i=0;i<count;i++){
+            const img = document.createElement('img');
+            img.src = ICONS_PATH + iconName;
+            img.alt = type;
+            chestsDiv.appendChild(img);
           }
-        })
+        });
 
-        let imgSrc = map.image ? map.image.replace(/\\/g, '/') : ''
-        if (!imgSrc) imgSrc = 'https://via.placeholder.com/220x150?text=No+Image'
-        else imgSrc = encodeURI(imgSrc)
+        let imgSrc = map.image ? encodeURI(map.image.replace(/\\/g,'/')) : 'https://via.placeholder.com/220x150?text=No+Image';
 
-        const div = document.createElement('div')
-        div.className = 'map'
+        const div = document.createElement('div');
+        div.className = 'map';
 
         const tooltipHTML = `
           <p>Leather: ${map.leather_nodes || 0}</p>
@@ -170,54 +174,58 @@
           <p>Stone: ${map.stone_nodes || 0}</p>
           <p>Fiber: ${map.fiber_nodes || 0}</p>
           <p>Mineral: ${map.mineral_nodes || 0}</p>
-        `
+        `;
 
         div.innerHTML = `
           <h3>${map.map_name || 'Sin nombre'} (T${map.tier || '?'})</h3>
           <img src="${imgSrc}" alt="${map.map_name || ''}">
-        `
-        div.appendChild(resourcesDiv)
-        div.appendChild(chestsDiv)
+        `;
+        div.appendChild(resourcesDiv);
+        div.appendChild(chestsDiv);
 
-        const tooltip = document.createElement('div')
-        tooltip.className = 'tooltip'
-        tooltip.innerHTML = tooltipHTML
-        div.appendChild(tooltip)
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.innerHTML = tooltipHTML;
+        div.appendChild(tooltip);
 
-        container.appendChild(div)
-      })
+        container.appendChild(div);
+      });
     }
 
-    tierSelect.addEventListener('change', applyFilters)
-    resourceSelect.addEventListener('change', applyFilters)
-
+    // Función de filtrado combinada
     function applyFilters() {
-  const tierValue = tierSelect.value;          // "all", "4", "5", ...
-  const resourceValue = resourceSelect.value.toUpperCase();  // normalizamos a mayúsculas
+      const query = searchInput.value.toLowerCase().trim();
+      const tierValue = tierSelect.value;
+      const resourceValue = resourceSelect.value.toUpperCase();
 
-  const filtered = allMaps.filter(map => {
-    // Detectamos la propiedad tier (case-insensitive)
-    const mapTierKey = Object.keys(map).find(k => k.toLowerCase() === 'tier');
-    const mapTier = mapTierKey ? String(map[mapTierKey]) : '';
-    const tierMatch = tierValue === 'all' || mapTier === tierValue;
+      const filtered = allMaps.filter(map => {
+        // Detectamos las claves correctas
+        const tierKey = Object.keys(map).find(k=>k.toLowerCase()==='tier');
+        const resourcesKey = Object.keys(map).find(k=>k.toLowerCase()==='resources');
 
-    // Detectamos la propiedad resources (case-insensitive)
-    const mapResourcesKey = Object.keys(map).find(k => k.toLowerCase() === 'resources');
-    const mapResources = mapResourcesKey ? (map[mapResourcesKey] || []).map(r => r.toUpperCase()) : [];
-    const resourceMatch = resourceValue === 'all' || mapResources.includes(resourceValue);
+        const mapTier = tierKey ? String(map[tierKey]) : '';
+        const mapResources = resourcesKey ? (map[resourcesKey]||[]).map(r=>r.toUpperCase()) : [];
+        const name = map.map_name || '';
 
-    return tierMatch && resourceMatch;
-  });
+        const tierMatch = tierValue==='all' || mapTier===tierValue;
+        const resourceMatch = resourceValue==='all' || mapResources.includes(resourceValue);
+        const searchMatch = query==='' || name.toLowerCase().includes(query);
 
-  // Si no hay mapas filtrados, mostramos un mensaje
-  if (filtered.length === 0) {
-    container.innerHTML = '<p style="text-align:center; color:#f88;">No se encontraron mapas.</p>';
-  } else {
-    renderMaps(filtered);
-  }
-}
+        return tierMatch && resourceMatch && searchMatch;
+      });
+
+      if(filtered.length===0){
+        container.innerHTML='<p style="text-align:center; color:#f88;">No se encontraron mapas.</p>';
+      } else {
+        renderMaps(filtered);
+      }
+    }
+
+    // Eventos
+    tierSelect.addEventListener('change', applyFilters);
+    resourceSelect.addEventListener('change', applyFilters);
+    searchInput.addEventListener('input', applyFilters);
   </script>
 </body>
 </html>
-
 
