@@ -20,15 +20,22 @@
     fetch(WORKER_URL)
       .then(res => res.json())
       .then(data => {
+        // Si tu Worker devuelve un array dentro de otro array, aplanamos
+        const mapsArray = Array.isArray(data[0]) ? data[0] : data
         const container = document.getElementById('maps')
-        data.forEach(map => {
+        
+        mapsArray.forEach(map => {
+          const resourcesText = map.resources && map.resources.length > 0 ? map.resources.join(', ') : 'No hay recursos'
+          // Codificamos la URL de la imagen para evitar problemas con espacios
+          const imgSrc = map.image ? encodeURI(map.image) : 'https://via.placeholder.com/220x150?text=No+Image'
+
           const div = document.createElement('div')
           div.className = 'map'
           div.innerHTML = `
-            <h3>${map.map_name} (T${map.tier})</h3>
-            <img src="${map.image}" alt="${map.map_name}">
-            <p>Recursos: ${map.resources.join(', ')}</p>
-            <p>Green Chests: ${map.green_chests}, Blue Chests: ${map.blue_chests}, Gold Chests: ${map.gold_chests}</p>
+            <h3>${map.map_name || 'Sin nombre'} (T${map.tier || '?'})</h3>
+            <img src="${imgSrc}" alt="${map.map_name || ''}">
+            <p>Recursos: ${resourcesText}</p>
+            <p>Green Chests: ${map.green_chests || 0}, Blue Chests: ${map.blue_chests || 0}, Gold Chests: ${map.gold_chests || 0}</p>
           `
           container.appendChild(div)
         })
