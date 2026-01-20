@@ -196,20 +196,28 @@
   const resourceValue = resourceSelect.value.toUpperCase();  // normalizamos a mayúsculas
 
   const filtered = allMaps.filter(map => {
-    // Forzar a string para tier, por si viene como número
-    const mapTier = map.tier ? String(map.tier) : '';
+    // Detectamos la propiedad tier (case-insensitive)
+    const mapTierKey = Object.keys(map).find(k => k.toLowerCase() === 'tier');
+    const mapTier = mapTierKey ? String(map[mapTierKey]) : '';
     const tierMatch = tierValue === 'all' || mapTier === tierValue;
 
-    // Normalizamos recursos a mayúsculas
-    const mapResources = (map.resources || []).map(r => r.toUpperCase());
+    // Detectamos la propiedad resources (case-insensitive)
+    const mapResourcesKey = Object.keys(map).find(k => k.toLowerCase() === 'resources');
+    const mapResources = mapResourcesKey ? (map[mapResourcesKey] || []).map(r => r.toUpperCase()) : [];
     const resourceMatch = resourceValue === 'all' || mapResources.includes(resourceValue);
 
     return tierMatch && resourceMatch;
   });
 
-  renderMaps(filtered);
+  // Si no hay mapas filtrados, mostramos un mensaje
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="text-align:center; color:#f88;">No se encontraron mapas.</p>';
+  } else {
+    renderMaps(filtered);
+  }
 }
   </script>
 </body>
 </html>
+
 
