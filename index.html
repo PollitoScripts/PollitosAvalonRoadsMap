@@ -4,195 +4,42 @@
 <meta charset="UTF-8">
 <title>Pollito's Albion Map Viewer</title>
 <style>
-/* BODY */
-body { 
-    font-family: 'Segoe UI', sans-serif; 
-    background:#111; 
-    color:#eee; 
-    margin:0; 
-    padding:0; 
-}
-h1 { 
-    text-align:center; 
-    margin:20px 0; 
-    font-size:2em; 
-    color:#f5f5f5;
-    text-shadow: 0 0 5px #222;
-}
-#search-container { 
-    text-align:center; 
-    margin-bottom:20px; 
-}
-#search-container input { 
-    padding:8px 12px; 
-    width:260px; 
-    border-radius:6px; 
-    border:1px solid #555; 
-    background:#222; 
-    color:#eee; 
-    font-size:1em; 
-    transition:0.2s; 
-}
-#search-container input:focus { 
-    outline:none; 
-    border-color:#e53935; 
-    box-shadow:0 0 8px rgba(229,57,53,0.5); 
-}
-
-/* GRID DE MAPAS */
-#maps { 
-    display:grid; 
-    grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); /* max 4 por fila */
-    gap:20px; 
-    padding:10px; 
-}
-
-/* MAPA */
-.map { 
-    border:1px solid #444; 
-    border-radius:12px; 
-    padding:10px; 
-    background:#222; 
-    cursor:pointer; 
-    transition: transform 0.25s ease, box-shadow 0.25s ease; 
-    position:relative; 
-}
-.map:hover { 
-    transform:scale(1.05); 
-    box-shadow:0 8px 20px rgba(0,0,0,0.7), 0 0 15px #e53935; 
-}
-.map img { 
-    max-width:100%; 
-    border-radius:6px; 
-    margin-bottom:6px; 
-    transition:0.2s; 
-}
-.map img:hover { transform:scale(1.02); }
-.map h3 { 
-    margin:5px 0 10px; 
-    font-size:1.15em; 
-    color:#fff; 
-    text-align:center; 
-    text-shadow: 0 0 4px #000; 
-}
-
-/* RECURSOS Y COFRES */
-.resources, .chests { 
-    display:flex; 
-    flex-wrap:wrap; 
-    gap:6px; 
-    margin:4px 0; 
-    justify-content:center;
-}
-.icon-wrapper { 
-    position:relative; 
-    display:inline-block; 
-    transition: transform 0.15s ease; 
-}
-.icon-wrapper:hover { 
-    transform:scale(1.2); 
-    z-index:5; 
-}
-.icon-wrapper img { 
-    width:22px; 
-    height:22px; 
-    filter: drop-shadow(0 1px 2px #000); 
-}
-
-/* BADGES */
-.icon-badge { 
-    position:absolute; 
-    top:-6px; 
-    right:-6px; 
-    min-width:16px; 
-    height:16px; 
-    padding:0 4px; 
-    background:#e53935; 
-    color:#fff; 
-    font-size:10px; 
-    font-weight:bold; 
-    border-radius:999px; 
-    display:flex; 
-    align-items:center; 
-    justify-content:center; 
-    box-shadow:0 0 0 1px #111; 
-    animation:pop 0.25s ease; 
-}
-@keyframes pop {
-    0% { transform: scale(0); opacity:0; }
-    60% { transform: scale(1.2); opacity:1; }
-    100% { transform: scale(1); }
-}
-
-/* TOOLTIP */
-.tooltip { 
-    position:absolute; 
-    top:5px; 
-    right:5px; 
-    background:rgba(0,0,0,0.85); 
-    padding:6px 8px; 
-    font-size:0.8em; 
-    border-radius:6px; 
-    display:none; 
-    z-index:10; 
-    box-shadow:0 2px 10px rgba(0,0,0,0.7); 
-}
-
-/* MODAL */
-#mapModal {
-    display:none; 
-    position:fixed; 
-    top:0; left:0; width:100%; height:100%; 
-    background:rgba(0,0,0,0.75); 
-    justify-content:center; 
-    align-items:center; 
-    z-index:50; 
-}
-#mapModal .modal-content {
-    background:#222; 
-    border-radius:12px; 
-    padding:20px; 
-    max-width:400px; 
-    width:90%; 
-    color:#eee;
-    text-align:center;
-    position:relative;
-}
-#mapModal .closeBtn {
-    position:absolute; 
-    top:10px; right:15px; 
-    font-size:18px; 
-    cursor:pointer; 
-    color:#e53935;
-}
-/* GRID DE MAPAS */
-#maps { 
-    display:grid; 
-    grid-template-columns:repeat(4, 1fr); /* exactamente 4 mapas por fila */
-    gap:20px; 
-    padding:10px; 
-}
-
-/* RESPONSIVE */
-@media(max-width:1200px){ #maps { grid-template-columns:repeat(3, 1fr); } }
-@media(max-width:900px){ #maps { grid-template-columns:repeat(2, 1fr); } }
-@media(max-width:600px){ #maps { grid-template-columns:repeat(1, 1fr); } }
-
+body { font-family:'Segoe UI',sans-serif;background:#111;color:#eee;margin:0 }
+h1{text-align:center;margin:20px 0}
+#search-container{text-align:center;margin-bottom:20px}
+#search-container input{padding:8px 12px;width:260px;border-radius:6px;border:1px solid #555;background:#222;color:#eee}
+#maps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:10px}
+.map{border:1px solid #444;border-radius:12px;padding:10px;background:#222;cursor:pointer;transition:.25s;position:relative}
+.map:hover{transform:scale(1.05);box-shadow:0 0 15px #e53935}
+.map img{max-width:100%;border-radius:6px;margin-bottom:6px}
+.map h3{text-align:center;margin:5px 0 10px}
+.resources,.chests{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.icon-wrapper{position:relative}
+.icon-wrapper img{width:22px;height:22px}
+.icon-badge{position:absolute;top:-6px;right:-6px;background:#e53935;color:#fff;font-size:10px;
+border-radius:999px;padding:0 4px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center}
+#mapModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);
+justify-content:center;align-items:center}
+.modal-content{background:#222;border-radius:12px;padding:20px;max-width:400px;width:90%}
+.closeBtn{position:absolute;top:10px;right:15px;cursor:pointer;color:#e53935}
+@media(max-width:1200px){#maps{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){#maps{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){#maps{grid-template-columns:repeat(1,1fr)}}
 </style>
 </head>
+
 <body>
-<h1>Albion Avalon-Maps</h1>
+<h1>Albion Avalon Maps</h1>
 <div id="search-container">
-<input type="text" id="mapSearch" placeholder="Buscar mapa...">
+<input id="mapSearch" placeholder="Buscar mapa...">
 </div>
 <div id="maps"></div>
 
-<!-- MODAL -->
 <div id="mapModal">
-    <div class="modal-content">
-        <span class="closeBtn">&times;</span>
-        <div id="modalBody"></div>
-    </div>
+<div class="modal-content">
+<span class="closeBtn">&times;</span>
+<div id="modalBody"></div>
+</div>
 </div>
 
 <script>
@@ -202,137 +49,119 @@ let allMaps=[];
 
 const container=document.getElementById('maps');
 const searchInput=document.getElementById('mapSearch');
+const modal=document.getElementById('mapModal');
+const modalBody=document.getElementById('modalBody');
 
-fetch(WORKER_URL)
-.then(res=>res.json())
-.then(data=>{
-    allMaps=Array.isArray(data[0])?data[0]:data;
-    renderMaps(allMaps);
-})
-.catch(err=>console.error('Error fetch:',err));
+fetch(WORKER_URL).then(r=>r.json()).then(d=>{
+	allMaps=Array.isArray(d[0])?d[0]:d;
+	renderMaps(allMaps);
+});
 
-const modal = document.getElementById('mapModal');
-const modalBody = document.getElementById('modalBody');
-const closeBtn = document.querySelector('#mapModal .closeBtn');
-closeBtn.onclick = () => modal.style.display='none';
-window.onclick = (e) => { if(e.target==modal) modal.style.display='none'; };
+document.querySelector('.closeBtn').onclick=()=>modal.style.display='none';
+window.onclick=e=>{if(e.target===modal)modal.style.display='none';};
 
-// Función reusable para badges
-function appendBadge(wrapper, count, isFirst=false, minForBadge=1){
-    if(isFirst || count >= minForBadge){
-        const badge=document.createElement('span');
-        badge.className='icon-badge';
-        badge.textContent=count;
-        wrapper.appendChild(badge);
-        return true;
-    }
-    return false;
+function appendBadge(wrapper,count){
+	const badge=document.createElement('span');
+	badge.className='icon-badge';
+	badge.textContent=count;
+	wrapper.appendChild(badge);
 }
+
+const resourceIcons={
+leather:'leather.png',wood:'wood.png',stone:'stone.png',fiber:'fiber.png',mineral:'mineral.png',
+blue:'blue.png',green:'green.png',cotton:'cotton.png',ore:'ore.png',rock:'rock.png',
+gold:'gold.png',dungeon:'dungeon.png',hire:'hire.png',logs:'logs.png'
+};
+
+const nodesMap = {
+	leather: 'leather_nodes',
+	hide: 'leather_nodes',
+
+	logs: 'wood_nodes',
+	wood: 'wood_nodes',
+
+	rock: 'stone_nodes',
+	stone: 'stone_nodes',
+
+	cotton: 'fiber_nodes',
+	fiber: 'fiber_nodes',
+
+	ore: 'mineral_nodes',
+	mineral: 'mineral_nodes'
+};
+
+
+const chestTypes=[
+{key:'green_chests',icon:'green.png'},
+{key:'blue_chests',icon:'blue.png'},
+{key:'gold_chests',icon:'gold.png'},
+{key:'dungeons',icon:'dungeon.png'}
+];
 
 function renderMaps(maps){
-    container.innerHTML='';
-    maps.forEach(map=>{
-        const div=document.createElement('div');
-        div.className='map';
-        const imgSrc=map.image?encodeURI(map.image.replace(/\\/g,'/')):'https://via.placeholder.com/220x150?text=No+Image';
-        div.innerHTML=`<h3>${map.map_name||'Sin nombre'} (T${map.tier||'?'})</h3><img src="${imgSrc}">`;
+container.innerHTML='';
+maps.forEach(map=>{
+const div=document.createElement('div');
+div.className='map';
+const imgSrc=map.image||'';
+div.innerHTML=`<h3>${map.map_name} (T${map.tier})</h3><img src="${imgSrc}">`;
 
-        /* RECURSOS */
-        const resourcesDiv=document.createElement('div');
-        resourcesDiv.className='resources';
-        const resourceIcons={
-            leather:'leather.png', wood:'wood.png', stone:'stone.png', fiber:'fiber.png', mineral:'mineral.png',
-            blue:'blue.png', green:'green.png', cotton:'cotton.png', ore:'ore.png', rock:'rock.png',
-            gold:'gold.png', dungeon:'dungeon.png', hire:'hire.png', logs:'logs.png'
-        };
-        const nodesMap={leather:'leather_nodes', wood:'wood_nodes', stone:'stone_nodes', fiber:'fiber_nodes', mineral:'mineral_nodes'};
-        const resourcesArray=Array.isArray(map.resources)?map.resources:[];
-        let firstResourceBadgeDone=false;
+const resourcesDiv=document.createElement('div');
+resourcesDiv.className='resources';
 
-        resourcesArray.forEach(r=>{
-            const key=r.toLowerCase();
-            if(!(key in resourceIcons)) return;
-            const wrapper=document.createElement('div');
-            wrapper.className='icon-wrapper';
-            const img=document.createElement('img');
-            img.src=ICONS_PATH+resourceIcons[key];
-            img.alt=key;
-            wrapper.appendChild(img);
+(map.resources||[]).forEach(r=>{
+const key=r.toLowerCase();
+if(!resourceIcons[key])return;
+const w=document.createElement('div');
+w.className='icon-wrapper';
+const i=document.createElement('img');
+i.src=ICONS_PATH+resourceIcons[key];
+w.appendChild(i);
 
-            const nodeKey=nodesMap[key];
-            if(nodeKey){
-                const count=Number(map[nodeKey])||0;
-                if(appendBadge(wrapper, count, !firstResourceBadgeDone, 1)){
-                    firstResourceBadgeDone=true;
-                }
-            }
-            resourcesDiv.appendChild(wrapper);
-        });
-
-        /* COFRES */
-        const chestsDiv=document.createElement('div');
-        chestsDiv.className='chests';
-        const chestTypes=[
-            {key:'green_chests',icon:'green.png'},
-            {key:'blue_chests',icon:'blue.png'},
-            {key:'gold_chests',icon:'gold.png'},
-            {key:'dungeons',icon:'dungeon.png'}
-        ];
-        let firstChestBadgeDone=false;
-
-        chestTypes.forEach(({key,icon})=>{
-            const count=Number(map[key])||0;
-            if(count<=0) return;
-            const wrapper=document.createElement('div');
-            wrapper.className='icon-wrapper';
-            const img=document.createElement('img');
-            img.src=ICONS_PATH+icon;
-            img.alt=key;
-            wrapper.appendChild(img);
-
-            if(appendBadge(wrapper, count, !firstChestBadgeDone, 2)){
-                firstChestBadgeDone=true;
-            }
-
-            chestsDiv.appendChild(wrapper);
-        });
-
-        div.appendChild(resourcesDiv);
-        div.appendChild(chestsDiv);
-        container.appendChild(div);
-
-        // CLICK PARA MODAL
-        div.onclick = () => {
-            modalBody.innerHTML = `
-                <h2>${map.map_name || 'Sin nombre'} (T${map.tier || '?'})</h2>
-                <img src="${imgSrc}" style="width:100%;border-radius:6px;margin-bottom:10px;">
-                <p><strong>Recursos:</strong></p>
-                <ul style="text-align:left;">
-                    <li>Leather: ${map.leather_nodes || 0}</li>
-                    <li>Wood: ${map.wood_nodes || 0}</li>
-                    <li>Stone: ${map.stone_nodes || 0}</li>
-                    <li>Fiber: ${map.fiber_nodes || 0}</li>
-                    <li>Mineral: ${map.mineral_nodes || 0}</li>
-                </ul>
-                <p><strong>Cofres:</strong></p>
-                <ul style="text-align:left;">
-                    <li>Green: ${map.green_chests || 0}</li>
-                    <li>Blue: ${map.blue_chests || 0}</li>
-                    <li>Gold: ${map.gold_chests || 0}</li>
-                    <li>Dungeon: ${map.dungeons || 0}</li>
-                </ul>
-            `;
-            modal.style.display='flex';
-        };
-    });
+if(nodesMap[key]){
+const count=Number(map[nodesMap[key]])||0;
+if(count>1)appendBadge(w,count);
 }
 
-searchInput.addEventListener('input',()=>{
-    const q=searchInput.value.toLowerCase().trim();
-    const filtered=allMaps.filter(m=>(m.map_name||'').toLowerCase().includes(q));
-    renderMaps(filtered);
+resourcesDiv.appendChild(w);
 });
+
+const chestsDiv=document.createElement('div');
+chestsDiv.className='chests';
+
+chestTypes.forEach(c=>{
+const count=Number(map[c.key])||0;
+if(count<=0)return;
+const w=document.createElement('div');
+w.className='icon-wrapper';
+const i=document.createElement('img');
+i.src=ICONS_PATH+c.icon;
+w.appendChild(i);
+if(count>1)appendBadge(w,count);
+chestsDiv.appendChild(w);
+});
+
+div.appendChild(resourcesDiv);
+div.appendChild(chestsDiv);
+container.appendChild(div);
+
+div.onclick=()=>{
+const list=Object.entries(nodesMap).map(([k,v])=>{
+return `<li>${k}: ${map[v]||0}</li>`;
+}).join('');
+modalBody.innerHTML=`
+<h2>${map.map_name} (T${map.tier})</h2>
+<img src="${imgSrc}" style="width:100%;border-radius:6px">
+<ul style="text-align:left">${list}</ul>`;
+modal.style.display='flex';
+};
+});
+}
+
+searchInput.oninput=()=>{
+const q=searchInput.value.toLowerCase();
+renderMaps(allMaps.filter(m=>m.map_name.toLowerCase().includes(q)));
+};
 </script>
 </body>
 </html>
-
