@@ -99,65 +99,84 @@ const chestTypes=[
 {key:'dungeons',icon:'dungeon.png'}
 ];
 
-function renderMaps(maps){
-container.innerHTML='';
-maps.forEach(map=>{
-const div=document.createElement('div');
-div.className='map';
-const imgSrc=map.image||'';
-div.innerHTML=`<h3>${map.map_name} (T${map.tier})</h3><img src="${imgSrc}">`;
+function renderMaps(maps) {
+    container.innerHTML = '';
 
-const resourcesDiv=document.createElement('div');
-resourcesDiv.className='resources';
+    maps.forEach(map => {
+        const div = document.createElement('div');
+        div.className = 'map';
+        const imgSrc = map.image || '';
+        div.innerHTML = `<h3>${map.map_name} (T${map.tier})</h3><img src="${imgSrc}">`;
 
-(map.resources||[]).forEach(r=>{
-const key=r.toLowerCase();
-if(!resourceIcons[key])return;
-const w=document.createElement('div');
-w.className='icon-wrapper';
-const i=document.createElement('img');
-i.src=ICONS_PATH+resourceIcons[key];
-w.appendChild(i);
+        const resourcesDiv = document.createElement('div');
+        resourcesDiv.className = 'resources';
 
-if(nodesMap[key]){
-const count=Number(map[nodesMap[key]])||0;
-if(count>1)appendBadge(w,count);
+        // Guardamos los iconos por src de imagen para evitar duplicados
+        const iconBySrc = {};
+
+        // Recursos normales
+        (map.resources || []).forEach(r => {
+            const key = r.toLowerCase();
+            if (!resourceIcons[key]) return;
+
+            const imgSrc = ICONS_PATH + resourceIcons[key];
+
+            // Crear icono solo si no existe
+            if (!iconBySrc[imgSrc]) {
+                const w = document.createElement('div');
+                w.className = 'icon-wrapper';
+                const i = document.createElement('img');
+                i.src = imgSrc;
+                w.appendChild(i);
+                resourcesDiv.appendChild(w);
+                iconBySrc[imgSrc] = w;
+            }
+
+            // Badge para recursos
+            if (nodesMap[key]) {
+                const count = Number(map[nodesMap[key]]) || 0;
+                if (count > 1) appendBadge(iconBySrc[imgSrc], count);
+            }
+        });
+
+        // Cofres
+        chestTypes.forEach(c => {
+            const count = Number(map[c.key]) || 0;
+            if (count <= 0) return;
+
+            const imgSrc = ICONS_PATH + c.icon;
+
+            // Crear icono solo si no existe
+            if (!iconBySrc[imgSrc]) {
+                const w = document.createElement('div');
+                w.className = 'icon-wrapper';
+                const i = document.createElement('img');
+                i.src = imgSrc;
+                w.appendChild(i);
+                resourcesDiv.appendChild(w);
+                iconBySrc[imgSrc] = w;
+            }
+
+            appendBadge(iconBySrc[imgSrc], count);
+        });
+
+        div.appendChild(resourcesDiv);
+        container.appendChild(div);
+
+        // Modal al hacer click
+        div.onclick = () => {
+            const list = Object.entries(nodesMap)
+                .map(([k, v]) => `<li>${k}: ${map[v] || 0}</li>`)
+                .join('');
+            modalBody.innerHTML = `
+                <h2>${map.map_name} (T${map.tier})</h2>
+                <img src="${imgSrc}" style="width:100%;border-radius:6px">
+                <ul style="text-align:left">${list}</ul>`;
+            modal.style.display = 'flex';
+        };
+    });
 }
 
-resourcesDiv.appendChild(w);
-});
-
-const chestsDiv=document.createElement('div');
-chestsDiv.className='chests';
-
-chestTypes.forEach(c=>{
-const count=Number(map[c.key])||0;
-if(count<=0)return;
-const w=document.createElement('div');
-w.className='icon-wrapper';
-const i=document.createElement('img');
-i.src=ICONS_PATH+c.icon;
-w.appendChild(i);
-if(count>1)appendBadge(w,count);
-chestsDiv.appendChild(w);
-});
-
-div.appendChild(resourcesDiv);
-div.appendChild(chestsDiv);
-container.appendChild(div);
-
-div.onclick=()=>{
-const list=Object.entries(nodesMap).map(([k,v])=>{
-return `<li>${k}: ${map[v]||0}</li>`;
-}).join('');
-modalBody.innerHTML=`
-<h2>${map.map_name} (T${map.tier})</h2>
-<img src="${imgSrc}" style="width:100%;border-radius:6px">
-<ul style="text-align:left">${list}</ul>`;
-modal.style.display='flex';
-};
-});
-}
 
 searchInput.oninput=()=>{
 const q=searchInput.value.toLowerCase();
@@ -166,6 +185,7 @@ renderMaps(allMaps.filter(m=>m.map_name.toLowerCase().includes(q)));
 </script>
 </body>
 </html>
+
 
 
 
