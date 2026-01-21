@@ -1,264 +1,293 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Pollito's Albion Map Viewer</title>
+<meta charset="UTF-8">
+<title>Pollito's Albion Map Viewer</title>
+<style>
+/* BODY */
+body { 
+    font-family: 'Segoe UI', sans-serif; 
+    background:#111; 
+    color:#eee; 
+    margin:0; 
+    padding:0; 
+}
 
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #111;
-      color: #eee;
-      margin: 0;
-      padding: 0;
-    }
+/* TÍTULO PRINCIPAL */
+h1 { 
+    text-align:center; 
+    margin:20px 0; 
+    font-size:2em; 
+    color:#f5f5f5;
+    text-shadow: 0 0 5px #222;
+}
 
-    h1 { text-align: center; margin: 20px 0; }
+/* BUSCADOR */
+#search-container { 
+    text-align:center; 
+    margin-bottom:20px; 
+}
+#search-container input { 
+    padding:8px 12px; 
+    width:260px; 
+    border-radius:6px; 
+    border:1px solid #555; 
+    background:#222; 
+    color:#eee; 
+    font-size:1em; 
+    transition:0.2s; 
+}
+#search-container input:focus { 
+    outline:none; 
+    border-color:#e53935; 
+    box-shadow:0 0 8px rgba(229,57,53,0.5); 
+}
 
-    #search-container {
-      text-align: center;
-      margin-bottom: 15px;
-    }
+/* CONTENEDOR DE MAPAS */
+#maps { 
+    display:flex; 
+    flex-wrap:wrap; 
+    justify-content:center; 
+    gap:15px; 
+    padding:10px; 
+}
 
-    #search-container input {
-      padding: 5px 10px;
-      width: 250px;
-      border-radius: 5px;
-      border: 1px solid #555;
-      background: #222;
-      color: #eee;
-    }
+/* MAPA INDIVIDUAL */
+.map { 
+    border:1px solid #444; 
+    border-radius:12px; 
+    padding:10px; 
+    width:220px; 
+    background:#222; 
+    transition: transform 0.25s ease, box-shadow 0.25s ease; 
+    position:relative; 
+}
+.map:hover { 
+    transform:scale(1.05); 
+    box-shadow:0 8px 20px rgba(0,0,0,0.7), 0 0 15px #e53935; 
+}
 
-    #maps {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-      padding: 10px;
-    }
+/* IMAGEN DEL MAPA */
+.map img { 
+    max-width:100%; 
+    border-radius:6px; 
+    margin-bottom:6px; 
+    transition:0.2s; 
+}
+.map img:hover { 
+    transform:scale(1.02); 
+}
 
-    .map {
-      border: 1px solid #444;
-      border-radius: 8px;
-      padding: 10px;
-      width: 220px;
-      background: #222;
-      transition: transform 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
+/* TITULO DEL MAPA */
+.map h3 { 
+    margin:5px 0 10px; 
+    font-size:1.15em; 
+    color:#fff; 
+    text-align:center; 
+    text-shadow: 0 0 4px #000; 
+}
 
-    .map:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px #888;
-    }
+/* RECURSOS Y COFRES */
+.resources, .chests { 
+    display:flex; 
+    flex-wrap:wrap; 
+    gap:6px; 
+    margin:4px 0; 
+    justify-content:center;
+}
+.icon-wrapper { 
+    position:relative; 
+    display:inline-block; 
+    transition: transform 0.15s ease; 
+}
+.icon-wrapper:hover { 
+    transform:scale(1.2); 
+    z-index:5; 
+}
+.icon-wrapper img { 
+    width:22px; 
+    height:22px; 
+    filter: drop-shadow(0 1px 2px #000); 
+}
 
-    .map img {
-      max-width: 100%;
-      border-radius: 4px;
-      margin-bottom: 5px;
-    }
+/* BADGES */
+.icon-badge { 
+    position:absolute; 
+    top:-6px; 
+    right:-6px; 
+    min-width:16px; 
+    height:16px; 
+    padding:0 4px; 
+    background:#e53935; 
+    color:#fff; 
+    font-size:10px; 
+    font-weight:bold; 
+    border-radius:999px; 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    box-shadow:0 0 0 1px #111; 
+    animation:pop 0.25s ease; 
+}
+@keyframes pop {
+    0% { transform: scale(0); opacity:0; }
+    60% { transform: scale(1.2); opacity:1; }
+    100% { transform: scale(1); }
+}
 
-    .map h3 {
-      margin: 5px 0;
-      font-size: 1.1em;
-    }
+/* TOOLTIP */
+.tooltip { 
+    position:absolute; 
+    top:5px; 
+    right:5px; 
+    background:rgba(0,0,0,0.85); 
+    padding:6px 8px; 
+    font-size:0.8em; 
+    border-radius:6px; 
+    display:none; 
+    z-index:10; 
+    box-shadow:0 2px 10px rgba(0,0,0,0.7); 
+}
+.map:hover .tooltip { 
+    display:block; 
+}
 
-    .resources, .chests {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 4px 0;
-    }
+/* MEDIA QUERIES PARA RESPONSIVO */
+@media(max-width:600px){
+    .map { width:45%; }
+}
+@media(max-width:400px){
+    .map { width:90%; }
+}
+</style>
 
-    .icon-wrapper {
-      position: relative;
-      display: inline-block;
-    }
-
-    .icon-wrapper img {
-      width: 20px;
-      height: 20px;
-    }
-
-    .icon-badge {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      min-width: 14px;
-      height: 14px;
-      padding: 0 4px;
-      background: #e53935;
-      color: #fff;
-      font-size: 10px;
-      font-weight: bold;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 0 1px #111;
-    }
-
-    .tooltip {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(0,0,0,0.7);
-      padding: 5px;
-      font-size: 0.8em;
-      border-radius: 5px;
-      display: none;
-      z-index: 10;
-    }
-
-    .map:hover .tooltip {
-      display: block;
-    }
-  </style>
 </head>
-
 <body>
-  <h1>Albion Avalon-Maps</h1>
+<h1>Albion Avalon-Maps</h1>
+<div id="search-container">
+<input type="text" id="mapSearch" placeholder="Buscar mapa...">
+</div>
+<div id="maps"></div>
 
-  <div id="search-container">
-    <input type="text" id="mapSearch" placeholder="Buscar mapa...">
-  </div>
+<script>
+const WORKER_URL='https://avalon-maps.pcaternador.workers.dev/';
+const ICONS_PATH='./icons/';
+let allMaps=[];
 
-  <div id="maps"></div>
+const container=document.getElementById('maps');
+const searchInput=document.getElementById('mapSearch');
 
-  <script>
-    const WORKER_URL = 'https://avalon-maps.pcaternador.workers.dev/';
-    const ICONS_PATH = './icons/';
-    let allMaps = [];
+fetch(WORKER_URL)
+.then(res=>res.json())
+.then(data=>{
+    allMaps=Array.isArray(data[0])?data[0]:data;
+    renderMaps(allMaps);
+})
+.catch(err=>console.error('Error fetch:',err));
 
-    const container = document.getElementById('maps');
-    const searchInput = document.getElementById('mapSearch');
+// Función reusable para agregar badge
+function appendBadge(wrapper, count, isFirst=false, minForBadge=1){
+    if(isFirst || count >= minForBadge){
+        const badge=document.createElement('span');
+        badge.className='icon-badge';
+        badge.textContent=count;
+        wrapper.appendChild(badge);
+        return true; // indica que se usó el badge
+    }
+    return false;
+}
 
-    fetch(WORKER_URL)
-      .then(res => res.json())
-      .then(data => {
-        allMaps = Array.isArray(data[0]) ? data[0] : data;
-        renderMaps(allMaps);
-      })
-      .catch(err => console.error('Error fetch:', err));
+function renderMaps(maps){
+    container.innerHTML='';
+    maps.forEach(map=>{
+        const div=document.createElement('div');
+        div.className='map';
+        const imgSrc=map.image?encodeURI(map.image.replace(/\\/g,'/')):'https://via.placeholder.com/220x150?text=No+Image';
+        div.innerHTML=`<h3>${map.map_name||'Sin nombre'} (T${map.tier||'?'})</h3><img src="${imgSrc}">`;
 
-    function renderMaps(maps) {
-      container.innerHTML = '';
+        /* RESOURCES */
+        const resourcesDiv=document.createElement('div');
+        resourcesDiv.className='resources';
+        const resourceIcons={
+            leather:'leather.png', wood:'wood.png', stone:'stone.png', fiber:'fiber.png', mineral:'mineral.png',
+            blue:'blue.png', green:'green.png', cotton:'cotton.png', ore:'ore.png', rock:'rock.png',
+            gold:'gold.png', dungeon:'dungeon.png', hire:'hire.png', logs:'logs.png'
+        };
+        const nodesMap={leather:'leather_nodes', wood:'wood_nodes', stone:'stone_nodes', fiber:'fiber_nodes', mineral:'mineral_nodes'};
+        const resourcesArray=Array.isArray(map.resources)?map.resources:[];
+        let firstResourceBadgeDone=false;
 
-      maps.forEach(map => {
-        const div = document.createElement('div');
-        div.className = 'map';
+        resourcesArray.forEach(r=>{
+            const key=r.toLowerCase();
+            if(!(key in resourceIcons)) return;
+            const wrapper=document.createElement('div');
+            wrapper.className='icon-wrapper';
+            const img=document.createElement('img');
+            img.src=ICONS_PATH+resourceIcons[key];
+            img.alt=key;
+            wrapper.appendChild(img);
 
-        const imgSrc = map.image
-          ? encodeURI(map.image.replace(/\\/g, '/'))
-          : 'https://via.placeholder.com/220x150?text=No+Image';
-
-        div.innerHTML = `
-          <h3>${map.map_name || 'Sin nombre'} (T${map.tier || '?'})</h3>
-          <img src="${imgSrc}">
-        `;
-
-        /* ===== RESOURCES ===== */
-        const resourcesDiv = document.createElement('div');
-        resourcesDiv.className = 'resources';
-
-        const resourceIcons = ['leather', 'wood', 'stone', 'fiber', 'mineral'];
-
-        const resourcesKey = Object.keys(map).find(
-          k => k.toLowerCase() === 'resources'
-        );
-        const resourcesArray = resourcesKey ? map[resourcesKey] : [];
-
-        resourceIcons.forEach(res => {
-          const nodeCount = Number(map[`${res}_nodes`]) || 0;
-
-          const existsInResources =
-            Array.isArray(resourcesArray) &&
-            resourcesArray.some(r => r.toLowerCase() === res);
-
-          if (nodeCount <= 0 && !existsInResources) return;
-
-          const count = nodeCount > 0 ? nodeCount : 1;
-
-          const wrapper = document.createElement('div');
-          wrapper.className = 'icon-wrapper';
-
-          const img = document.createElement('img');
-          img.src = ICONS_PATH + res + '.png';
-          img.alt = res;
-
-          wrapper.appendChild(img);
-
-          if (count > 1) {
-            const badge = document.createElement('span');
-            badge.className = 'icon-badge';
-            badge.textContent = count;
-            wrapper.appendChild(badge);
-          }
-
-          resourcesDiv.appendChild(wrapper);
+            const nodeKey=nodesMap[key];
+            if(nodeKey){
+                const count=Number(map[nodeKey])||0;
+                if(appendBadge(wrapper, count, !firstResourceBadgeDone, 1)){
+                    firstResourceBadgeDone=true;
+                }
+            }
+            resourcesDiv.appendChild(wrapper);
         });
 
-        /* ===== CHESTS ===== */
-        const chestsDiv = document.createElement('div');
-        chestsDiv.className = 'chests';
-
-        const chestTypes = [
-          { key: 'green_chests', icon: 'green.png' },
-          { key: 'blue_chests', icon: 'blue.png' },
-          { key: 'gold_chests', icon: 'gold.png' },
-          { key: 'dungeons', icon: 'dungeon.png' }
+        /* CHESTS */
+        const chestsDiv=document.createElement('div');
+        chestsDiv.className='chests';
+        const chestTypes=[
+            {key:'green_chests',icon:'green.png'},
+            {key:'blue_chests',icon:'blue.png'},
+            {key:'gold_chests',icon:'gold.png'},
+            {key:'dungeons',icon:'dungeon.png'}
         ];
+        let firstChestBadgeDone=false;
 
-        chestTypes.forEach(({ key, icon }) => {
-          const count = Number(map[key]) || 0;
-          if (count <= 0) return;
+        chestTypes.forEach(({key,icon})=>{
+            const count=Number(map[key])||0;
+            if(count<=0) return;
+            const wrapper=document.createElement('div');
+            wrapper.className='icon-wrapper';
+            const img=document.createElement('img');
+            img.src=ICONS_PATH+icon;
+            img.alt=key;
+            wrapper.appendChild(img);
 
-          const wrapper = document.createElement('div');
-          wrapper.className = 'icon-wrapper';
+            if(appendBadge(wrapper, count, !firstChestBadgeDone, 2)){
+                firstChestBadgeDone=true;
+            }
 
-          const img = document.createElement('img');
-          img.src = ICONS_PATH + icon;
-          img.alt = key;
-
-          wrapper.appendChild(img);
-
-          if (count > 1) {
-            const badge = document.createElement('span');
-            badge.className = 'icon-badge';
-            badge.textContent = count;
-            wrapper.appendChild(badge);
-          }
-
-          chestsDiv.appendChild(wrapper);
+            chestsDiv.appendChild(wrapper);
         });
 
-        /* ===== TOOLTIP ===== */
-        const tooltip = document.createElement('div');
-        tooltip.className = 'tooltip';
-        tooltip.innerHTML = `
-          <p>Leather: ${map.leather_nodes || 0}</p>
-          <p>Wood: ${map.wood_nodes || 0}</p>
-          <p>Stone: ${map.stone_nodes || 0}</p>
-          <p>Fiber: ${map.fiber_nodes || 0}</p>
-          <p>Mineral: ${map.mineral_nodes || 0}</p>
+        /* TOOLTIP */
+        const tooltip=document.createElement('div');
+        tooltip.className='tooltip';
+        tooltip.innerHTML=`
+            <p>Leather: ${map.leather_nodes||0}</p>
+            <p>Wood: ${map.wood_nodes||0}</p>
+            <p>Stone: ${map.stone_nodes||0}</p>
+            <p>Fiber: ${map.fiber_nodes||0}</p>
+            <p>Mineral: ${map.mineral_nodes||0}</p>
         `;
 
         div.appendChild(resourcesDiv);
         div.appendChild(chestsDiv);
         div.appendChild(tooltip);
-
         container.appendChild(div);
-      });
-    }
-
-    searchInput.addEventListener('input', () => {
-      const q = searchInput.value.toLowerCase().trim();
-      const filtered = allMaps.filter(m =>
-        (m.map_name || '').toLowerCase().includes(q)
-      );
-      renderMaps(filtered);
     });
-  </script>
+}
+
+searchInput.addEventListener('input',()=>{
+    const q=searchInput.value.toLowerCase().trim();
+    const filtered=allMaps.filter(m=>(m.map_name||'').toLowerCase().includes(q));
+    renderMaps(filtered);
+});
+</script>
 </body>
 </html>
-
