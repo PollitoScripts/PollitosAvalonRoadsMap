@@ -12,8 +12,6 @@ body {
     margin:0; 
     padding:0; 
 }
-
-/* TÍTULO PRINCIPAL */
 h1 { 
     text-align:center; 
     margin:20px 0; 
@@ -21,8 +19,6 @@ h1 {
     color:#f5f5f5;
     text-shadow: 0 0 5px #222;
 }
-
-/* BUSCADOR */
 #search-container { 
     text-align:center; 
     margin-bottom:20px; 
@@ -43,22 +39,21 @@ h1 {
     box-shadow:0 0 8px rgba(229,57,53,0.5); 
 }
 
-/* CONTENEDOR DE MAPAS */
+/* GRID DE MAPAS */
 #maps { 
-    display:flex; 
-    flex-wrap:wrap; 
-    justify-content:center; 
-    gap:15px; 
+    display:grid; 
+    grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); /* max 4 por fila */
+    gap:20px; 
     padding:10px; 
 }
 
-/* MAPA INDIVIDUAL */
+/* MAPA */
 .map { 
     border:1px solid #444; 
     border-radius:12px; 
     padding:10px; 
-    width:220px; 
     background:#222; 
+    cursor:pointer; 
     transition: transform 0.25s ease, box-shadow 0.25s ease; 
     position:relative; 
 }
@@ -66,19 +61,13 @@ h1 {
     transform:scale(1.05); 
     box-shadow:0 8px 20px rgba(0,0,0,0.7), 0 0 15px #e53935; 
 }
-
-/* IMAGEN DEL MAPA */
 .map img { 
     max-width:100%; 
     border-radius:6px; 
     margin-bottom:6px; 
     transition:0.2s; 
 }
-.map img:hover { 
-    transform:scale(1.02); 
-}
-
-/* TITULO DEL MAPA */
+.map img:hover { transform:scale(1.02); }
 .map h3 { 
     margin:5px 0 10px; 
     font-size:1.15em; 
@@ -148,19 +137,48 @@ h1 {
     z-index:10; 
     box-shadow:0 2px 10px rgba(0,0,0,0.7); 
 }
-.map:hover .tooltip { 
-    display:block; 
+
+/* MODAL */
+#mapModal {
+    display:none; 
+    position:fixed; 
+    top:0; left:0; width:100%; height:100%; 
+    background:rgba(0,0,0,0.75); 
+    justify-content:center; 
+    align-items:center; 
+    z-index:50; 
+}
+#mapModal .modal-content {
+    background:#222; 
+    border-radius:12px; 
+    padding:20px; 
+    max-width:400px; 
+    width:90%; 
+    color:#eee;
+    text-align:center;
+    position:relative;
+}
+#mapModal .closeBtn {
+    position:absolute; 
+    top:10px; right:15px; 
+    font-size:18px; 
+    cursor:pointer; 
+    color:#e53935;
+}
+/* GRID DE MAPAS */
+#maps { 
+    display:grid; 
+    grid-template-columns:repeat(4, 1fr); /* exactamente 4 mapas por fila */
+    gap:20px; 
+    padding:10px; 
 }
 
-/* MEDIA QUERIES PARA RESPONSIVO */
-@media(max-width:600px){
-    .map { width:45%; }
-}
-@media(max-width:400px){
-    .map { width:90%; }
-}
+/* RESPONSIVE */
+@media(max-width:1200px){ #maps { grid-template-columns:repeat(3, 1fr); } }
+@media(max-width:900px){ #maps { grid-template-columns:repeat(2, 1fr); } }
+@media(max-width:600px){ #maps { grid-template-columns:repeat(1, 1fr); } }
+
 </style>
-
 </head>
 <body>
 <h1>Albion Avalon-Maps</h1>
@@ -168,6 +186,14 @@ h1 {
 <input type="text" id="mapSearch" placeholder="Buscar mapa...">
 </div>
 <div id="maps"></div>
+
+<!-- MODAL -->
+<div id="mapModal">
+    <div class="modal-content">
+        <span class="closeBtn">&times;</span>
+        <div id="modalBody"></div>
+    </div>
+</div>
 
 <script>
 const WORKER_URL='https://avalon-maps.pcaternador.workers.dev/';
@@ -185,14 +211,20 @@ fetch(WORKER_URL)
 })
 .catch(err=>console.error('Error fetch:',err));
 
-// Función reusable para agregar badge
+const modal = document.getElementById('mapModal');
+const modalBody = document.getElementById('modalBody');
+const closeBtn = document.querySelector('#mapModal .closeBtn');
+closeBtn.onclick = () => modal.style.display='none';
+window.onclick = (e) => { if(e.target==modal) modal.style.display='none'; };
+
+// Función reusable para badges
 function appendBadge(wrapper, count, isFirst=false, minForBadge=1){
     if(isFirst || count >= minForBadge){
         const badge=document.createElement('span');
         badge.className='icon-badge';
         badge.textContent=count;
         wrapper.appendChild(badge);
-        return true; // indica que se usó el badge
+        return true;
     }
     return false;
 }
@@ -205,7 +237,7 @@ function renderMaps(maps){
         const imgSrc=map.image?encodeURI(map.image.replace(/\\/g,'/')):'https://via.placeholder.com/220x150?text=No+Image';
         div.innerHTML=`<h3>${map.map_name||'Sin nombre'} (T${map.tier||'?'})</h3><img src="${imgSrc}">`;
 
-        /* RESOURCES */
+        /* RECURSOS */
         const resourcesDiv=document.createElement('div');
         resourcesDiv.className='resources';
         const resourceIcons={
@@ -237,7 +269,7 @@ function renderMaps(maps){
             resourcesDiv.appendChild(wrapper);
         });
 
-        /* CHESTS */
+        /* COFRES */
         const chestsDiv=document.createElement('div');
         chestsDiv.className='chests';
         const chestTypes=[
@@ -265,21 +297,33 @@ function renderMaps(maps){
             chestsDiv.appendChild(wrapper);
         });
 
-        /* TOOLTIP */
-        const tooltip=document.createElement('div');
-        tooltip.className='tooltip';
-        tooltip.innerHTML=`
-            <p>Leather: ${map.leather_nodes||0}</p>
-            <p>Wood: ${map.wood_nodes||0}</p>
-            <p>Stone: ${map.stone_nodes||0}</p>
-            <p>Fiber: ${map.fiber_nodes||0}</p>
-            <p>Mineral: ${map.mineral_nodes||0}</p>
-        `;
-
         div.appendChild(resourcesDiv);
         div.appendChild(chestsDiv);
-        div.appendChild(tooltip);
         container.appendChild(div);
+
+        // CLICK PARA MODAL
+        div.onclick = () => {
+            modalBody.innerHTML = `
+                <h2>${map.map_name || 'Sin nombre'} (T${map.tier || '?'})</h2>
+                <img src="${imgSrc}" style="width:100%;border-radius:6px;margin-bottom:10px;">
+                <p><strong>Recursos:</strong></p>
+                <ul style="text-align:left;">
+                    <li>Leather: ${map.leather_nodes || 0}</li>
+                    <li>Wood: ${map.wood_nodes || 0}</li>
+                    <li>Stone: ${map.stone_nodes || 0}</li>
+                    <li>Fiber: ${map.fiber_nodes || 0}</li>
+                    <li>Mineral: ${map.mineral_nodes || 0}</li>
+                </ul>
+                <p><strong>Cofres:</strong></p>
+                <ul style="text-align:left;">
+                    <li>Green: ${map.green_chests || 0}</li>
+                    <li>Blue: ${map.blue_chests || 0}</li>
+                    <li>Gold: ${map.gold_chests || 0}</li>
+                    <li>Dungeon: ${map.dungeons || 0}</li>
+                </ul>
+            `;
+            modal.style.display='flex';
+        };
     });
 }
 
@@ -291,3 +335,4 @@ searchInput.addEventListener('input',()=>{
 </script>
 </body>
 </html>
+
