@@ -50,8 +50,12 @@ How To Add A Map
   },
 ```
 > Mas agobiao que Doraemon en Aduanas. [name=Pollito420 ak:pollitruskis]
-> Thanks to ikarus0331 for help in the css
+
 ## Appendix and FAQ
 
 **Find this document incomplete?** Leave a comment!
+
+## Thanks to
+> Thanks to ikarus0331 for help in the css
+
 
