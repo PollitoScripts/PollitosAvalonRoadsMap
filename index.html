@@ -284,11 +284,107 @@ h1 {
   box-shadow: 0 0 8px var(--gold-shadow);
 }
 
+/* ===== Foto 3D ===== */
+.parent {
+  width: 290px;
+  height: 300px;
+  perspective: 1200px;
+  position: relative;
+  margin-left: 250px; /* <-- desplaza la tarjeta a la derecha */
+}
+
+.card {
+  height: 100%;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #d4af7f 0%, #b88c4a 100%);
+  transition: transform 0.1s ease-out, box-shadow 0.3s ease-in-out;
+  transform-style: preserve-3d;
+  box-shadow: rgba(0,0,0,0.1) 0px 10px 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.glass {
+  position: absolute;
+  inset: 8px;
+  border-radius: 55px;
+  border-top-right-radius: 100%;
+  background: linear-gradient(0deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.35) 100%);
+  transform: translate3d(0px, 0px, 25px);
+  border-left: 1px solid rgba(255,255,255,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50px;
+  transform: translate3d(0, 0, 30px);
+  transition: transform 0.1s ease-out, box-shadow 0.3s ease-in-out;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+  z-index: 1;
+}
+
+.reflection {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%);
+  pointer-events: none;
+  transform: translate3d(0, 0, 60px);
+  z-index: 2;
+  transition: transform 0.1s ease-out, opacity 0.3s ease-in-out;
+}
+
+/* Destellos dorados */
+.sparkles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+  background-image: radial-gradient(circle, rgba(255, 215, 0, 0.5) 0%, rgba(255, 215, 0, 0) 70%);
+  background-repeat: repeat;
+  background-size: 20% 20%;
+  opacity: 0.2;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+/* Enlace */
+.card-link {
+  display: inline-block; /* Para que tome el tamaño de la tarjeta */
+  cursor: pointer;
+  text-decoration: none; /* Quita subrayado si es link */
+}
+
 </style>
 </head>
 
 <body>
 <h1 class="fancy-title">Albion Avalon Maps</h1>
+
+
+<!-- ======= Guild Spam ======= -->
+<a href="https://discord.gg/JWnJQBqSX6" target="_blank" class="card-link">
+  <div class="parent">
+    <div class="card">
+      <div class="glass"></div>
+      <div class="sparkles"></div>
+     <img src="icons/SMOKINGS.png" alt="Foto 3D" class="photo">
+      <div class="reflection"></div>
+    </div>
+  </div>
+</a>
+
+<!-- ======= Barra Busqueda ======= -->
 
 <div class="grid"></div>
 <div id="poda">
@@ -363,7 +459,11 @@ const container=document.getElementById('maps');
 const searchInput=document.getElementById('mapSearch');
 const modal=document.getElementById('mapModal');
 const modalBody=document.getElementById('modalBody');
-
+const parent = document.querySelector('.parent');
+const card = document.querySelector('.card');
+const photo = document.querySelector('.photo');
+const reflection = document.querySelector('.reflection');
+const sparkles = document.querySelector('.sparkles');
 // ===================== Fetch mapas =====================
 fetch(WORKER_URL).then(r=>r.json()).then(d=>{
 	allMaps=Array.isArray(d[0])?d[0]:d;
@@ -473,8 +573,38 @@ searchInput.oninput = () => {
     const q = searchInput.value.toLowerCase();
     renderMaps(allMaps.filter(m=>m.map_name.toLowerCase().includes(q)));
 };
-</script>
+
+// ==================== Detecta posicion mouse para foto 3d =============
+    parent.addEventListener('mousemove', (e) => {
+      const rect = parent.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * 15;
+      const rotateY = ((x - centerX) / centerX) * 15;
+
+      card.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+      photo.style.transform = `translate3d(0, 0, 70px) scale(1.05)`;
+      reflection.style.transform = `translate3d(0, 0, 90px) scale(1.05)`;
+      reflection.style.opacity = 0.6;
+
+      const offsetX = (x / rect.width) * 20 - 10;
+      const offsetY = (y / rect.height) * 20 - 10;
+      sparkles.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      sparkles.style.opacity = 0.3;
+    });
+
+    parent.addEventListener('mouseleave', () => {
+      card.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
+      photo.style.transform = `translate3d(0, 0, 30px) scale(1)`;
+      reflection.style.transform = `translate3d(0, 0, 60px) scale(1)`;
+      reflection.style.opacity = 1;
+      sparkles.style.transform = `translate(0px, 0px)`;
+      sparkles.style.opacity = 0.2;
+    });
+  </script>
 </body>
 </html>
-
-
