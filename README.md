@@ -1,10 +1,4 @@
 ---
-title: PollitosAvalonRoadsMap========
-tags: [Templates, Documentation]
-
----
-
----
 title: 'PollitosAvalonRoadsMap'
 ---
 > **PollitosAvalonRoadsMap**
@@ -56,15 +50,6 @@ How To Add A Map
   },
 ```
 > Mas agobiao que Doraemon en Aduanas. [name= Pollito420 ak:pollitruskis]
-
-
-Add Map Sequence
----
-```sequence
-Anonimous->Pollito420 or pollitruskis : Hello add this map 
-Note right of Pollito420 or pollitruskis: Pollito420 or pollitruskis thinks
-Pollito420 or pollitruskis-->Anonimous: Perfect, I'll do it.
-```
 
 ## Appendix and FAQ
 
