@@ -2,9 +2,11 @@
 > **PollitosAvalonRoadsMap**
 ---
 ## GUIDE
-
-[TOC]
-
+## Table of Contents
+- [How To Add A Map](#how-to-add-a-map)
+- [Add Map Sequence](#add-map-sequence)
+- [Appendix and FAQ](#appendix-and-faq)
+- [CONTACT](#contact)
 ## CONTACT
 
 If you want to add some map, have any issues or any advantage
