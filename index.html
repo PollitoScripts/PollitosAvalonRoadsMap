@@ -8,9 +8,32 @@
 body { font-family:'Segoe UI',sans-serif;background:#111;color:#eee;margin:0 }
 h1{text-align:center;margin:20px 0}
 #maps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:10px}
-.map{border:1px solid #444;border-radius:12px;padding:10px;background:#222;cursor:pointer;transition:.25s;position:relative}
+.map {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #444;
+  border-radius: 12px;
+  padding: 10px;
+  background: #222;
+  cursor: pointer;
+  transition: .25s;
+  position: relative;
+
+  /* Quitamos altura fija para usar JS */
+  min-height: unset;
+  max-height: unset;
+  box-sizing: border-box;
+}
+
 .map:hover{transform:scale(1.05);box-shadow:0 0 15px #e53935}
-.map img{max-width:100%;border-radius:6px;margin-bottom:6px}
+.map img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  object-fit: contain;
+}
 .map h3{text-align:center;margin:5px 0 10px}
 .resources{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 .icon-wrapper{position:relative}
@@ -608,6 +631,45 @@ function renderMaps(maps) {
 
     });
 }
+// Ajustar alturas
+function ajustarAlturasMapas() {
+    const maps = document.querySelectorAll('.map');
+    let maxHeight = 0;
+
+    // Primero calculamos la altura máxima de cada mapa
+    maps.forEach(map => {
+        map.style.height = 'auto'; // reset
+        const h = map.offsetHeight;
+        if (h > maxHeight) maxHeight = h;
+    });
+
+    // Aplicamos la altura máxima a todos
+    maps.forEach(map => {
+        map.style.height = maxHeight + 'px';
+    });
+}
+
+// Ejecutar después de renderizar mapas
+renderMaps(allMaps);
+ajustarAlturasMapas();
+
+// También actualizamos al filtrar
+searchInput.addEventListener("input", () => {
+    let value = searchInput.value.replace(/ /g, "-");
+    searchInput.value = value;
+    if (value.endsWith("-")) return;
+
+    const query = value.toLowerCase();
+    renderMaps(
+        allMaps.filter(m =>
+            m.map_name
+                .toLowerCase()
+                .replace(/ /g, "-")
+                .includes(query)
+        )
+    );
+    ajustarAlturasMapas(); // ajustamos después de filtrar
+});
 
 // ===================== Filtro búsqueda =====================
 searchInput.addEventListener("input", () => {
