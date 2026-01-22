@@ -53,6 +53,5 @@ How To Add A Map
 
 ## Appendix and FAQ
 
-:::info
 **Find this document incomplete?** Leave a comment!
-:::
+
