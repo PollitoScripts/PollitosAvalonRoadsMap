@@ -1,5 +1,4 @@
-
-> **PollitosAvalonRoadsMap**
+ **PollitosAvalonRoadsMap**
 ---
 ## GUIDE
 ## Table of Contents
