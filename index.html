@@ -284,15 +284,35 @@ h1 {
   box-shadow: 0 0 8px var(--gold-shadow);
 }
 
-/* ===== Foto 3D ===== */
+/* ============= Contenedor principal: uno a la izquierda y otro a la derecha ============ */
+.container {
+  display: flex;
+  justify-content: space-between; /* Extremos */
+  align-items: flex-start;        /* Alinea por arriba */
+  width: 100%;
+  padding: 2em;
+  box-sizing: border-box;
+  flex-wrap: wrap;                /* Permite que baje en pantallas muy pequeñas */
+  gap: 2em;                       /* Espacio entre foto y tele */
+}
+
+/* Evitar que los enlaces se expandan */
+.photo_container,
+.tv_container {
+  display: inline-flex; /* Solo ocupa el tamaño del contenido */
+  flex-direction: column;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ===== FOTO 3D ===== */
 .parent {
   width: 290px;
   height: 300px;
   perspective: 1200px;
   position: relative;
-  margin-left: 250px; /* <-- desplaza la tarjeta a la derecha */
+  margin-left: auto;   
 }
-
 .card {
   height: 100%;
   border-radius: 50px;
@@ -306,18 +326,6 @@ h1 {
   justify-content: center;
   align-items: center;
 }
-
-.glass {
-  position: absolute;
-  inset: 8px;
-  border-radius: 55px;
-  border-top-right-radius: 100%;
-  background: linear-gradient(0deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.35) 100%);
-  transform: translate3d(0px, 0px, 25px);
-  border-left: 1px solid rgba(255,255,255,0.3);
-  border-bottom: 1px solid rgba(255,255,255,0.3);
-}
-
 .photo {
   width: 100%;
   height: 100%;
@@ -328,7 +336,16 @@ h1 {
   box-shadow: 0 15px 30px rgba(0,0,0,0.3);
   z-index: 1;
 }
-
+.glass {
+  position: absolute;
+  inset: 8px;
+  border-radius: 55px;
+  border-top-right-radius: 100%;
+  background: linear-gradient(0deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.35) 100%);
+  transform: translate3d(0px, 0px, 25px);
+  border-left: 1px solid rgba(255,255,255,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+}
 .reflection {
   position: absolute;
   top: 0;
@@ -358,32 +375,25 @@ h1 {
   opacity: 0.2;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
-/* Enlace */
-.card-link {
-  display: inline-block; /* Para que tome el tamaño de la tarjeta */
-  cursor: pointer;
-  text-decoration: none; /* Quita subrayado si es link */
-}
-
 </style>
 </head>
 
 <body>
 <h1 class="fancy-title">Albion Avalon Maps</h1>
 
-
-<!-- ======= Guild Spam ======= -->
-<a href="https://discord.gg/JWnJQBqSX6" target="_blank" class="card-link">
+<div class="container"> <!-- Contenedor horizontal -->
+<!-- ======= Guild Spam Discord ======= -->
+<a href="https://discord.gg/JWnJQBqSX6" target="_blank" class="photo_container">
   <div class="parent">
     <div class="card">
-      <div class="glass"></div>
-      <div class="sparkles"></div>
      <img src="icons/SMOKINGS.png" alt="Foto 3D" class="photo">
-      <div class="reflection"></div>
+	 <div class="glass"></div>
+     <div class="sparkles"></div>
+     <div class="reflection"></div>
     </div>
   </div>
 </a>
-
+</div>
 <!-- ======= Barra Busqueda ======= -->
 
 <div class="grid"></div>
@@ -464,6 +474,7 @@ const card = document.querySelector('.card');
 const photo = document.querySelector('.photo');
 const reflection = document.querySelector('.reflection');
 const sparkles = document.querySelector('.sparkles');
+const input = document.getElementById("mapSearch");
 // ===================== Fetch mapas =====================
 fetch(WORKER_URL).then(r=>r.json()).then(d=>{
 	allMaps=Array.isArray(d[0])?d[0]:d;
@@ -569,11 +580,25 @@ function renderMaps(maps) {
 }
 
 // ===================== Filtro búsqueda =====================
-searchInput.oninput = () => {
-    const q = searchInput.value.toLowerCase();
-    renderMaps(allMaps.filter(m=>m.map_name.toLowerCase().includes(q)));
-};
+searchInput.addEventListener("input", () => {
+    // Reemplaza espacios por guiones
+    let value = searchInput.value.replace(/ /g, "-");
+    searchInput.value = value;
 
+    // Si termina en "-", no filtramos todavía
+    if (value.endsWith("-")) return;
+
+    const query = value.toLowerCase();
+
+    renderMaps(
+        allMaps.filter(m =>
+            m.map_name
+                .toLowerCase()
+                .replace(/ /g, "-") // normaliza nombre del mapa
+                .includes(query)
+        )
+    );
+});
 // ==================== Detecta posicion mouse para foto 3d =============
     parent.addEventListener('mousemove', (e) => {
       const rect = parent.getBoundingClientRect();
