@@ -49,7 +49,7 @@ How To Add A Map
     "dungeons": 0
   },
 ```
-> Mas agobiao que Doraemon en Aduanas. [name= Pollito420 ak:pollitruskis]
+> Mas agobiao que Doraemon en Aduanas. [name==Pollito420 ak:pollitruskis]
 
 ## Appendix and FAQ
 
