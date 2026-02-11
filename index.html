@@ -571,12 +571,18 @@ const chestTypes=[
 ];
 
 // ===================== Render mapas =====================
+fetch(WORKER_URL)
+.then(r => r.json())
+.then(d => {
+    allMaps = Array.isArray(d[0]) ? d[0] : d;
+    renderMaps(allMaps);
+});
+
 function renderMaps(maps) {
-    container.innerHTML = '';
+    container.innerHTML = ''; // limpiar
     maps.forEach(map => {
         const div = document.createElement('div');
         div.className = 'map';
-        const imgSrc = map.image || '';
 
         // ===== Nombre y zona =====
         const titleWrapper = document.createElement('div');
@@ -588,7 +594,6 @@ function renderMaps(maps) {
 
         const title = document.createElement('h3');
         title.textContent = `${map.map_name} (T${map.tier})`;
-        title.style.margin = '0';
         titleWrapper.appendChild(title);
 
         if (map.zone && map.zone.length) {
@@ -604,7 +609,7 @@ function renderMaps(maps) {
 
         // ===== Imagen =====
         const img = document.createElement('img');
-        img.src = imgSrc;
+        img.src = map.image || '';
         div.appendChild(img);
 
         // ===== Recursos =====
@@ -652,113 +657,103 @@ function renderMaps(maps) {
 
         // ===== Modal =====
         div.onclick = () => {
-    // Contenido base del modal
-    modalBody.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <h2 style="margin:0;">${map.map_name} (T${map.tier})</h2>
-        ${map.zone && map.zone.length ? `<span style="background:#FFD700;color:#111;font-weight:bold;padding:2px 8px;border-radius:12px;font-size:0.9rem;">${map.zone.join(', ')}</span>` : ''}
-    </div>
-    <img src="${imgSrc}" style="width:100%;border-radius:6px;margin-top:10px;">
-`;
+            modalBody.innerHTML = '';
 
+            // Título
+            const headerDiv = document.createElement('div');
+            headerDiv.style.display = 'flex';
+            headerDiv.style.alignItems = 'center';
+            headerDiv.style.gap = '10px';
+            headerDiv.style.flexWrap = 'wrap';
 
-    // Contenedor de recursos
-    const modalResources = document.createElement('div');
-    modalResources.className = 'resources-container';
-    const modalIconBySrc = {};
+            const h2 = document.createElement('h2');
+            h2.style.margin = '0';
+            h2.textContent = `${map.map_name} (T${map.tier})`;
+            headerDiv.appendChild(h2);
 
-    (map.resources || []).forEach(r => {
-        const key = r.toLowerCase();
-        if (!resourceIcons[key]) return;
-        const src = ICONS_PATH + resourceIcons[key];
-        if (!modalIconBySrc[src]) {
-            const w = document.createElement('div');
-            w.className = 'icon-wrapper';
-            const i = document.createElement('img');
-            i.src = src;
-            i.alt = key;
-            w.appendChild(i);
-            modalResources.appendChild(w);
-            modalIconBySrc[src] = w;
-        }
-        if (nodesMap[key]) {
-            const count = Number(map[nodesMap[key]]) || 0;
-            if (count > 1) appendBadge(modalIconBySrc[src], count);
-        }
+            if (map.zone && map.zone.length) {
+                const zoneSpan = document.createElement('span');
+                zoneSpan.textContent = map.zone.join(', ');
+                zoneSpan.style.background = '#FFD700';
+                zoneSpan.style.color = '#111';
+                zoneSpan.style.fontWeight = 'bold';
+                zoneSpan.style.padding = '2px 8px';
+                zoneSpan.style.borderRadius = '12px';
+                zoneSpan.style.fontSize = '0.9rem';
+                headerDiv.appendChild(zoneSpan);
+            }
+
+            modalBody.appendChild(headerDiv);
+
+            // Imagen
+            const modalImg = document.createElement('img');
+            modalImg.src = map.image || '';
+            modalImg.style.width = '100%';
+            modalImg.style.borderRadius = '6px';
+            modalImg.style.marginTop = '10px';
+            modalBody.appendChild(modalImg);
+
+            // Recursos
+            const modalResources = document.createElement('div');
+            modalResources.className = 'resources-container';
+            const modalIconBySrc = {};
+
+            (map.resources || []).forEach(r => {
+                const key = r.toLowerCase();
+                if (!resourceIcons[key]) return;
+                const src = ICONS_PATH + resourceIcons[key];
+                if (!modalIconBySrc[src]) {
+                    const w = document.createElement('div');
+                    w.className = 'icon-wrapper';
+                    const i = document.createElement('img');
+                    i.src = src;
+                    i.alt = key;
+                    w.appendChild(i);
+                    modalResources.appendChild(w);
+                    modalIconBySrc[src] = w;
+                }
+                if (nodesMap[key]) {
+                    const count = Number(map[nodesMap[key]]) || 0;
+                    if (count > 1) appendBadge(modalIconBySrc[src], count);
+                }
+            });
+
+            chestTypes.forEach(c => {
+                const count = Number(map[c.key]) || 0;
+                if (count <= 0) return;
+                const src = ICONS_PATH + c.icon;
+                if (!modalIconBySrc[src]) {
+                    const w = document.createElement('div');
+                    w.className = 'icon-wrapper';
+                    const i = document.createElement('img');
+                    i.src = src;
+                    w.appendChild(i);
+                    modalResources.appendChild(w);
+                    modalIconBySrc[src] = w;
+                }
+                appendBadge(modalIconBySrc[src], count);
+            });
+
+            modalBody.appendChild(modalResources);
+
+            // Mostrar modal
+            modal.style.display = 'flex';
+            document.body.classList.add("map-open");
+
+            // Hover para ocultar recursos
+            modalImg.addEventListener('mouseenter', () => {
+                modalResources.style.opacity = '0';
+                modalResources.style.pointerEvents = 'none';
+            });
+            modalImg.addEventListener('mouseleave', () => {
+                modalResources.style.opacity = '1';
+                modalResources.style.pointerEvents = 'auto';
+            });
+        };
     });
 
-    chestTypes.forEach(c => {
-        const count = Number(map[c.key]) || 0;
-        if (count <= 0) return;
-        const src = ICONS_PATH + c.icon;
-        if (!modalIconBySrc[src]) {
-            const w = document.createElement('div');
-            w.className = 'icon-wrapper';
-            const i = document.createElement('img');
-            i.src = src;
-            w.appendChild(i);
-            modalResources.appendChild(w);
-            modalIconBySrc[src] = w;
-        }
-        appendBadge(modalIconBySrc[src], count);
-    });
-
-    modalBody.appendChild(modalResources);
-
-    modal.style.display = 'flex';
-    document.body.classList.add("map-open");
-
-	// ===== NUEVO: ocultar recursos al hacer hover sobre la imagen =====
-    const modalImg = document.getElementById('modalMapImg');
-    modalImg.addEventListener('mouseenter', () => {
-        modalResources.style.opacity = '0';       // Desaparece suavemente
-        modalResources.style.pointerEvents = 'none'; // Evita interferencias
-    });
-    modalImg.addEventListener('mouseleave', () => {
-        modalResources.style.opacity = '1';       // Vuelve a aparecer
-        modalResources.style.pointerEvents = 'auto';
-    });
-};
-		
-// Ajustar alturas
-function ajustarAlturasMapas() {
-    const maps = document.querySelectorAll('.map');
-    let maxHeight = 0;
-
-    // Primero calculamos la altura máxima de cada mapa
-    maps.forEach(map => {
-        map.style.height = 'auto'; // reset
-        const h = map.offsetHeight;
-        if (h > maxHeight) maxHeight = h;
-    });
-
-    // Aplicamos la altura máxima a todos
-    maps.forEach(map => {
-        map.style.height = maxHeight + 'px';
-    });
+    ajustarAlturasMapas(); // recalcular altura
 }
-
-// Ejecutar después de renderizar mapas
-renderMaps(allMaps);
-ajustarAlturasMapas();
-
-// También actualizamos al filtrar
-searchInput.addEventListener("input", () => {
-    let value = searchInput.value.replace(/ /g, "-");
-    searchInput.value = value;
-    if (value.endsWith("-")) return;
-
-    const query = value.toLowerCase();
-    renderMaps(
-        allMaps.filter(m =>
-            m.map_name
-                .toLowerCase()
-                .replace(/ /g, "-")
-                .includes(query)
-        )
-    );
-    ajustarAlturasMapas(); // ajustamos después de filtrar
-});
 
 // ===================== Filtro búsqueda =====================
 searchInput.addEventListener("input", () => {
@@ -814,5 +809,4 @@ searchInput.addEventListener("input", () => {
   </script>
 </body>
 </html>
-
 
