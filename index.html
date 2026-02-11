@@ -417,11 +417,6 @@ h1 {
   align-items:center;
   flex-wrap:wrap;
 }
-/* ===== Ocultar iconos al hacer hover sobre la foto sin moverlos ===== */
-.map:hover .resources {
-  opacity: 0;            /* Se desvanecen */
-  pointer-events: none;  /* No interfieren con hover */
-}
 
 </style>
 </head>
@@ -712,11 +707,19 @@ function renderMaps(maps) {
 
     modal.style.display = 'flex';
     document.body.classList.add("map-open");
-};
 
+	// ===== NUEVO: ocultar recursos al hacer hover sobre la imagen =====
+    const modalImg = document.getElementById('modalMapImg');
+    modalImg.addEventListener('mouseenter', () => {
+        modalResources.style.opacity = '0';       // Desaparece suavemente
+        modalResources.style.pointerEvents = 'none'; // Evita interferencias
     });
-}
-
+    modalImg.addEventListener('mouseleave', () => {
+        modalResources.style.opacity = '1';       // Vuelve a aparecer
+        modalResources.style.pointerEvents = 'auto';
+    });
+};
+		
 // Ajustar alturas
 function ajustarAlturasMapas() {
     const maps = document.querySelectorAll('.map');
@@ -811,4 +814,5 @@ searchInput.addEventListener("input", () => {
   </script>
 </body>
 </html>
+
 
