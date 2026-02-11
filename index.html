@@ -45,7 +45,7 @@ h1{text-align:center;margin:20px 0}
 border-radius:999px;padding:0
 4px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center}
 #mapModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);justify-content:center;align-items:center}
-#modalBody > img:first-of-type:hover{transform:scale(1.50);box-shadow:0 0 15px}
+#modalBody > img:first-of-type:hover{transform:scale(3);box-shadow:0 0 15px}
 .modal-content{background:#222;border-radius:12px;padding:20px;max-width:400px;width:90%}
 .closeBtn{position:absolute;top:10px;right:15px;cursor:pointer;color:#e53935}
 @media(max-width:1200px){#maps{grid-template-columns:repeat(2,1fr)}}
@@ -408,6 +408,16 @@ h1 {
   opacity: 0.2;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
+/* ===== Recursos dentro del modal (horizontal) ===== */
+.resources-container{
+  display:flex;
+  flex-direction:row;
+  gap:6px;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
 </style>
 </head>
 
@@ -653,6 +663,27 @@ const iconBySrc = {};
         if (count > 1) appendBadge(iconBySrc[src], count);
     }
 });
+// Cofres (igual que en las cards)
+chestTypes.forEach(c => {
+    const count = Number(map[c.key]) || 0;
+    if (count <= 0) return;
+
+    const src = ICONS_PATH + c.icon;
+
+    if (!iconBySrc[src]) {
+        const w = document.createElement('div');
+        w.className = 'icon-wrapper';
+
+        const i = document.createElement('img');
+        i.src = src;
+
+        w.appendChild(i);
+        resourcesDiv.appendChild(w);
+        iconBySrc[src] = w;
+    }
+
+    appendBadge(iconBySrc[src], count);
+});
 
 // Añadir los recursos al modal
 modalBody.appendChild(resourcesDiv);
@@ -760,5 +791,3 @@ searchInput.addEventListener("input", () => {
   </script>
 </body>
 </html>
-
-
