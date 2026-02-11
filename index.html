@@ -27,7 +27,7 @@ h1{text-align:center;margin:20px 0}
   box-sizing: border-box;
 }
 
-.map:hover{transform:scale(1.05);box-shadow:0 0 15px #e53935}
+.map:hover.resources{transform:scale(1.05);box-shadow:0 0 15px #e53935}
 .map img {
   max-width: 100%;
   border-radius: 6px;
@@ -35,7 +35,7 @@ h1{text-align:center;margin:20px 0}
   object-fit: contain;
 }
 .map h3{text-align:center;margin:5px 0 10px}
-.resources{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.resources{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;transition: opacity 0.25s; /* suaviza aparición/desaparición */}
 .icon-wrapper{position:relative}
 .icon-wrapper img {
   width: 32px;
@@ -577,13 +577,41 @@ function renderMaps(maps) {
         const div = document.createElement('div');
         div.className = 'map';
         const imgSrc = map.image || '';
-        div.innerHTML = `<h3>${map.map_name} (T${map.tier})</h3><img src="${imgSrc}">`;
 
+        // ===== Nombre y zona =====
+        const titleWrapper = document.createElement('div');
+        titleWrapper.style.display = 'flex';
+        titleWrapper.style.justifyContent = 'center';
+        titleWrapper.style.alignItems = 'center';
+        titleWrapper.style.gap = '10px';
+        titleWrapper.style.flexWrap = 'wrap';
+
+        const title = document.createElement('h3');
+        title.textContent = `${map.map_name} (T${map.tier})`;
+        title.style.margin = '0';
+        titleWrapper.appendChild(title);
+
+        if (map.zone && map.zone.length) {
+            const zoneSpan = document.createElement('span');
+            zoneSpan.textContent = map.zone.join(', ');
+            zoneSpan.style.fontSize = '0.9em';
+            zoneSpan.style.color = '#FFD700';
+            zoneSpan.style.fontWeight = 'bold';
+            titleWrapper.appendChild(zoneSpan);
+        }
+
+        div.appendChild(titleWrapper);
+
+        // ===== Imagen =====
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        div.appendChild(img);
+
+        // ===== Recursos =====
         const resourcesDiv = document.createElement('div');
         resourcesDiv.className = 'resources';
         const iconBySrc = {};
 
-        // Recursos
         (map.resources || []).forEach(r => {
             const key = r.toLowerCase();
             if (!resourceIcons[key]) return;
@@ -591,7 +619,8 @@ function renderMaps(maps) {
             if (!iconBySrc[src]) {
                 const w = document.createElement('div');
                 w.className = 'icon-wrapper';
-                const i = document.createElement('img'); i.src = src;
+                const i = document.createElement('img'); 
+                i.src = src;
                 w.appendChild(i);
                 resourcesDiv.appendChild(w);
                 iconBySrc[src] = w;
@@ -602,7 +631,6 @@ function renderMaps(maps) {
             }
         });
 
-        // Cofres
         chestTypes.forEach(c => {
             const count = Number(map[c.key]) || 0;
             if (count <= 0) return;
@@ -610,7 +638,8 @@ function renderMaps(maps) {
             if (!iconBySrc[src]) {
                 const w = document.createElement('div');
                 w.className = 'icon-wrapper';
-                const i = document.createElement('img'); i.src = src;
+                const i = document.createElement('img'); 
+                i.src = src;
                 w.appendChild(i);
                 resourcesDiv.appendChild(w);
                 iconBySrc[src] = w;
@@ -621,82 +650,68 @@ function renderMaps(maps) {
         div.appendChild(resourcesDiv);
         container.appendChild(div);
 
-        // Modal
+        // ===== Modal =====
         div.onclick = () => {
-    const list = Object.entries(nodesMap)
-        .map(([k,v]) => `<li>${k}: ${map[v] || 0}</li>`)
-        .join('');
-
-    // Primero el contenido base del modal
-modalBody.innerHTML = `
-    <h2>${map.map_name} (T${map.tier})</h2>
-    <img src="${imgSrc}" style="width:100%;border-radius:6px">
+    // Contenido base del modal
+    modalBody.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2 style="margin:0;">${map.map_name} (T${map.tier})</h2>
+        ${map.zone && map.zone.length ? `<span style="background:#FFD700;color:#111;font-weight:bold;padding:2px 8px;border-radius:12px;font-size:0.9rem;">${map.zone.join(', ')}</span>` : ''}
+    </div>
+    <img src="${imgSrc}" style="width:100%;border-radius:6px;margin-top:10px;">
 `;
 
-// Crear contenedor de recursos
-const resourcesDiv = document.createElement('div');
-resourcesDiv.className = 'resources-container';
 
-const iconBySrc = {};
+    // Contenedor de recursos
+    const modalResources = document.createElement('div');
+    modalResources.className = 'resources-container';
+    const modalIconBySrc = {};
 
-(map.resources || []).forEach(r => {
-    const key = r.toLowerCase();
-    if (!resourceIcons[key]) return;
+    (map.resources || []).forEach(r => {
+        const key = r.toLowerCase();
+        if (!resourceIcons[key]) return;
+        const src = ICONS_PATH + resourceIcons[key];
+        if (!modalIconBySrc[src]) {
+            const w = document.createElement('div');
+            w.className = 'icon-wrapper';
+            const i = document.createElement('img');
+            i.src = src;
+            i.alt = key;
+            w.appendChild(i);
+            modalResources.appendChild(w);
+            modalIconBySrc[src] = w;
+        }
+        if (nodesMap[key]) {
+            const count = Number(map[nodesMap[key]]) || 0;
+            if (count > 1) appendBadge(modalIconBySrc[src], count);
+        }
+    });
 
-    const src = ICONS_PATH + resourceIcons[key];
+    chestTypes.forEach(c => {
+        const count = Number(map[c.key]) || 0;
+        if (count <= 0) return;
+        const src = ICONS_PATH + c.icon;
+        if (!modalIconBySrc[src]) {
+            const w = document.createElement('div');
+            w.className = 'icon-wrapper';
+            const i = document.createElement('img');
+            i.src = src;
+            w.appendChild(i);
+            modalResources.appendChild(w);
+            modalIconBySrc[src] = w;
+        }
+        appendBadge(modalIconBySrc[src], count);
+    });
 
-    if (!iconBySrc[src]) {
-        const w = document.createElement('div');
-        w.className = 'icon-wrapper';
-
-        const i = document.createElement('img');
-        i.src = src;
-        i.alt = key;
-
-        w.appendChild(i);
-        resourcesDiv.appendChild(w);
-        iconBySrc[src] = w;
-    }
-
-    if (nodesMap[key]) {
-        const count = Number(map[nodesMap[key]]) || 0;
-        if (count > 1) appendBadge(iconBySrc[src], count);
-    }
-});
-// Cofres (igual que en las cards)
-chestTypes.forEach(c => {
-    const count = Number(map[c.key]) || 0;
-    if (count <= 0) return;
-
-    const src = ICONS_PATH + c.icon;
-
-    if (!iconBySrc[src]) {
-        const w = document.createElement('div');
-        w.className = 'icon-wrapper';
-
-        const i = document.createElement('img');
-        i.src = src;
-
-        w.appendChild(i);
-        resourcesDiv.appendChild(w);
-        iconBySrc[src] = w;
-    }
-
-    appendBadge(iconBySrc[src], count);
-});
-
-// Añadir los recursos al modal
-modalBody.appendChild(resourcesDiv);
-
+    modalBody.appendChild(modalResources);
 
     modal.style.display = 'flex';
-
-    // 🔥 OCULTAR ICONO FILTRO
     document.body.classList.add("map-open");
-	};
+};
 
     });
 }
+
 // Ajustar alturas
 function ajustarAlturasMapas() {
     const maps = document.querySelectorAll('.map');
