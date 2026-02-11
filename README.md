@@ -47,6 +47,9 @@ How To Add A Map
     "blue_chests": 0,
     "gold_chests": 0,
     "dungeons": 0
+    "zone": [
+      "x" //HO, TUNNEL, BLACK, ROYALE, BRECILIEN, PORTAL DOURADOS
+    ]
   },
 ```
 > Mas agobiao que Doraemon en Aduanas. [name=Pollito420 ak:pollitruskis]
